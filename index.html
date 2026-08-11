@@ -145,6 +145,19 @@ body {
 a { color: inherit; }
 img { max-width: 100%; display: block; }
 
+/* ---------- selection & scrollbar ---------- */
+::selection { background: var(--accent); color: var(--bg); }
+html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
+::-webkit-scrollbar { width: 11px; height: 11px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb {
+  background-color: var(--border);
+  border-radius: 999px;
+  border: 3px solid var(--bg);
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover { background-color: var(--accent); }
+
 /* ---------- grain ---------- */
 .grain {
   position: fixed;
@@ -370,6 +383,12 @@ img { max-width: 100%; display: block; }
 .hero-art {
   position: relative;
   justify-self: center;
+  /* Driven by a scroll listener in the page's own <script>, once the
+     entrance animation above has released its grip on transform (see
+     the animationend handler) -- a subtle parallax drift as the hero
+     scrolls past, not the arrival animation itself. */
+  transform: translateY(var(--parallax-y, 0px));
+  will-change: transform;
 }
 .phone-frame {
   position: relative;
@@ -1461,6 +1480,32 @@ img { max-width: 100%; display: block; }
   };
   window.addEventListener('scroll', toggleBackToTop, { passive: true });
   toggleBackToTop();
+
+  // A subtle parallax drift on the hero phone shot as it scrolls past
+  // -- moves at a fraction of real scroll speed, capped low, so it
+  // reads as gentle depth rather than a gimmick. Only runs while the
+  // hero section is actually in view (no point computing it once
+  // scrolled well past), and rAF-throttled so it can't run more than
+  // once per frame no matter how fast the scroll events fire.
+  var heroArt = document.querySelector('.hero-art');
+  var heroSection = document.getElementById('top');
+  if (heroArt && heroSection && !reduceMotion) {
+    var parallaxTicking = false;
+    var updateParallax = function () {
+      parallaxTicking = false;
+      var rect = heroSection.getBoundingClientRect();
+      if (rect.bottom <= 0 || rect.top >= window.innerHeight) return;
+      var offset = Math.max(0, -rect.top) * 0.15;
+      heroArt.style.setProperty('--parallax-y', Math.min(offset, 48) + 'px');
+    };
+    window.addEventListener('scroll', function () {
+      if (!parallaxTicking) {
+        parallaxTicking = true;
+        requestAnimationFrame(updateParallax);
+      }
+    }, { passive: true });
+    updateParallax();
+  }
 }());
 </script>
 
