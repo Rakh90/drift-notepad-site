@@ -558,7 +558,7 @@ img { max-width: 100%; display: block; }
 .live-panel {
   padding-block: clamp(2.5rem, 5vw, 3.5rem);
   display: grid;
-  grid-template-columns: minmax(0, 0.7fr) minmax(0, 1.3fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: clamp(2rem, 5vw, 3.5rem);
   align-items: center;
   background: radial-gradient(ellipse 22% 32% at 26% 50%, var(--warm-soft), transparent);
@@ -573,18 +573,21 @@ img { max-width: 100%; display: block; }
 }
 .live-panel-copy p { color: var(--text-dim); margin: 0; max-width: 40ch; }
 .live-panel-art {
+  max-width: 420px;
+  margin-left: auto;
   border-radius: 14px;
   overflow: hidden;
   border: 1px solid var(--border);
   box-shadow: 0 20px 40px -18px var(--shadow);
 }
-.live-panel-art img { width: 100%; height: auto; }
+.live-panel-art img { width: 100%; height: auto; display: block; }
 
 @media (max-width: 760px) {
   .live-panel {
     grid-template-columns: 1fr;
     background: radial-gradient(ellipse 55% 18% at 50% 12%, var(--warm-soft), transparent);
   }
+  .live-panel-art { margin: 0 auto; }
 }
 
 /* ---------- icon mosaic ---------- */
@@ -1417,12 +1420,22 @@ img { max-width: 100%; display: block; }
   // would do the same to anything else interactive added there
   // later). Clearing the animation once it finishes, rather than
   // leaving forwards to hold it in place, hands transform back to
-  // ordinary hover/active CSS without any visible jump -- the
-  // rendered state at that instant already matches the animation's
-  // own end keyframe.
+  // ordinary hover/active CSS without any visible jump.
+  //
+  // Just clearing `animation` isn't enough on its own, though -- the
+  // element's base rule (.hero-copy > *, .hero-art) sets opacity: 0
+  // as a plain, non-animation declaration, which is what the
+  // animation's forwards fill-mode was overriding to keep it visible
+  // at opacity: 1. Removing the animation without also pinning
+  // opacity/transform to their finished values as real inline styles
+  // drops the animation's override and falls straight back to that
+  // base opacity: 0 -- the whole hero fading in and then silently
+  // fading back out the instant its entrance animation ends.
   document.querySelectorAll('.hero-copy > *, .hero-art').forEach(function (el) {
     el.addEventListener('animationend', function () {
       el.style.animation = 'none';
+      el.style.opacity = '1';
+      el.style.transform = '';
     }, { once: true });
   });
 
