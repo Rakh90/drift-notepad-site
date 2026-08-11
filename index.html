@@ -16,6 +16,7 @@
   --text: #eef1ec;
   --text-dim: #93a8a4;
   --accent: #5cbbae;
+  --accent-rgb: 92, 187, 174;
   --accent-strong: #7fd0c4;
   --accent-soft: rgba(92, 187, 174, 0.14);
   --warm: #e0995f;
@@ -41,6 +42,7 @@
     --text: #1c2b27;
     --text-dim: #5d6c63;
     --accent: #2f7d73;
+    --accent-rgb: 47, 125, 115;
     --accent-strong: #256359;
     --accent-soft: rgba(47, 125, 115, 0.10);
     --warm: #ab5c2b;
@@ -59,6 +61,7 @@
   --text: #1c2b27;
   --text-dim: #5d6c63;
   --accent: #2f7d73;
+  --accent-rgb: 47, 125, 115;
   --accent-strong: #256359;
   --accent-soft: rgba(47, 125, 115, 0.10);
   --warm: #ab5c2b;
@@ -76,6 +79,7 @@
   --text: #eef1ec;
   --text-dim: #93a8a4;
   --accent: #5cbbae;
+  --accent-rgb: 92, 187, 174;
   --accent-strong: #7fd0c4;
   --accent-soft: rgba(92, 187, 174, 0.14);
   --warm: #e0995f;
@@ -838,6 +842,7 @@ img { max-width: 100%; display: block; }
 
 /* ---------- store button ---------- */
 .store-btn {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 0.6rem;
@@ -856,6 +861,23 @@ img { max-width: 100%; display: block; }
 .store-btn:hover, .store-btn:focus-visible {
   transform: translateY(-2px);
   box-shadow: 0 20px 36px -16px var(--shadow);
+}
+/* A slow breathing ring around the button, separate from its own
+   box-shadow (a ::after pseudo-element, not an animation on the
+   button itself) so the hover/focus box-shadow above can't fight the
+   animation's box-shadow keyframes over who wins each frame. */
+.store-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: 0 0 0 0 rgba(var(--accent-rgb), 0.45);
+  animation: store-btn-pulse 2.4s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes store-btn-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(var(--accent-rgb), 0.45); }
+  50% { box-shadow: 0 0 0 14px rgba(var(--accent-rgb), 0); }
 }
 .store-btn-icon {
   font-size: 0.8rem;
@@ -901,6 +923,7 @@ img { max-width: 100%; display: block; }
 #back-to-top svg { width: 18px; height: 18px; }
 @media (prefers-reduced-motion: reduce) {
   #back-to-top { transition: opacity 0.2s ease; transform: none !important; }
+  .store-btn::after { animation: none; }
 }
 
 /* ---------- footer ---------- */
