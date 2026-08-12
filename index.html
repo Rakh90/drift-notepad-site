@@ -180,6 +180,34 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
   opacity: 0.12;
 }
 
+/* ---------- perf diagnostic mode (?perf=minimal) ---------- */
+/* Strips every decorative extra at once -- grain, glow blobs, pulse
+   rings, reveal fade-ins and their content-visibility -- so a single
+   on-device test says whether the lag is even about these effects at
+   all. Toggled by a tiny inline script right after <body> opens, before
+   first paint, based on the URL's ?perf=minimal param. Not linked from
+   anywhere in the UI; a temporary tool for tracking down the reported
+   scroll lag, meant to be removed once that's resolved. */
+.perf-minimal .grain,
+.perf-minimal .hero-art::before,
+.perf-minimal .hero-art::after,
+.perf-minimal .store-btn::before,
+.perf-minimal .store-btn::after {
+  display: none !important;
+}
+.perf-minimal .reveal {
+  content-visibility: visible !important;
+  opacity: 1 !important;
+  transform: none !important;
+  transition: none !important;
+}
+.perf-minimal .hero-copy > *,
+.perf-minimal .hero-art {
+  animation: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+}
+
 /* ---------- scroll reveal ---------- */
 .reveal {
   opacity: 0;
@@ -1114,6 +1142,7 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
 </style>
 </head>
 <body>
+<script>if (location.search.indexOf('perf=minimal') !== -1) document.body.classList.add('perf-minimal');</script>
 
 <div class="grain" aria-hidden="true"></div>
 
