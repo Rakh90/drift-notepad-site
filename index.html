@@ -222,7 +222,20 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
   opacity: 1;
   transform: translateY(0);
 }
-.feature.reveal { contain-intrinsic-size: auto 970px; }
+/* Formatting, Tables, and Calendar (.feature.reveal, sections 2-4,
+   right after the hero) are the three worst-positioned sections on the
+   page for the early-trigger observer above: they're close enough to
+   the top that whoever's scrolling reaches them soon after load, which
+   is exactly when there's the least lead time for that observer to have
+   already done its deferred-layout work before the user arrives -- every
+   section past these has far more scroll distance, and therefore far
+   more real time, between page load and actually being reached.
+   Reported on-device as lag concentrated in this stretch specifically.
+   Skip-rendering these three barely saves anything anyway, being this
+   close to the initial viewport, so they opt out of content-visibility
+   entirely and just render like normal content -- no deferral, no
+   early-trigger race to lose. */
+.feature.reveal { content-visibility: visible; }
 .live-panel.reveal { contain-intrinsic-size: auto 370px; }
 .homescreen.reveal { contain-intrinsic-size: auto 955px; }
 .notif-panel.reveal { contain-intrinsic-size: auto 720px; }
