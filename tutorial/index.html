@@ -144,7 +144,7 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
 .jump-row a:active { transform: translateY(0) scale(0.95); }
 
 /* ---------- doc section ---------- */
-.doc-section { padding-block: clamp(3rem, 6vw, 5rem); border-top: 1px solid var(--border); }
+.doc-section { padding-block: clamp(3rem, 6vw, 5rem); border-top: 1px solid var(--border); content-visibility: auto; contain-intrinsic-size: auto 1400px; }
 .doc-section-head { max-width: 62ch; margin: 0 0 2.5rem; }
 .doc-section-head h2 {
   font-family: var(--font-display); font-weight: 500; font-size: clamp(1.9rem, 1.6vw + 1.2rem, 2.6rem);
@@ -210,6 +210,36 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
 }
 @media (max-width: 600px) {
   .site-nav { flex-wrap: wrap; gap: 0.75rem; }
+}
+
+#back-to-top {
+  position: fixed;
+  right: clamp(1.25rem, 4vw, 2.5rem);
+  bottom: clamp(1.25rem, 4vw, 2.5rem);
+  z-index: 500;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(120deg, var(--accent) 0%, var(--accent-strong) 100%);
+  color: var(--bg);
+  box-shadow: 0 12px 28px -10px var(--shadow), 0 0 0 1px var(--border);
+  opacity: 0;
+  transform: translateY(12px) scale(0.9);
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+}
+#back-to-top.visible { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
+#back-to-top:hover, #back-to-top:focus-visible {
+  box-shadow: 0 16px 34px -10px var(--shadow), 0 0 0 4px var(--accent-soft);
+  transform: translateY(-3px) scale(1);
+}
+#back-to-top:active { transform: translateY(0) scale(0.88); }
+#back-to-top svg { width: 18px; height: 18px; }
+@media (prefers-reduced-motion: reduce) {
+  #back-to-top { transition: opacity 0.2s ease; transform: none !important; }
 }
 
 .site-footer { border-top: 1px solid var(--border); padding-block: 2.25rem; }
@@ -334,7 +364,7 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
         <h3><span class="topic-icon">↕</span>Reordering by dragging</h3>
         <p>Notes on the dashboard (when sorted "Manually"), header icons, categories in Settings, and list lines in a note can all be long-pressed and dragged to reorder. Hold for about half a second until it "picks up," then drag it where you want.</p>
       </div>
-      <div class="doc-topic">
+      <div class="doc-topic" id="photos">
         <h3><span class="topic-icon">📷</span>Photos</h3>
         <p>Add photos to a note with the Camera, Gallery, or Files buttons at the bottom of its editor. The first photo shows as a thumbnail on the note's dashboard card, with a badge for how many it holds.</p>
       </div>
@@ -506,6 +536,10 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
 
 <div class="wrap tideline-wrap" style="padding-block:1rem;"></div>
 
+<a href="#top" id="back-to-top" aria-label="Back to top">
+  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l5-5 5 5M8 4v8"/></svg>
+</a>
+
 <footer class="site-footer">
   <div class="wrap footer-row">
     <span>&copy; 2026 Drift Notepad</span>
@@ -513,6 +547,17 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
     <a href="../privacypolicy/">Privacy Policy</a>
   </div>
 </footer>
+
+<script>
+(function () {
+  var backToTop = document.getElementById('back-to-top');
+  var toggleBackToTop = function () {
+    backToTop.classList.toggle('visible', window.scrollY > window.innerHeight * 0.8);
+  };
+  window.addEventListener('scroll', toggleBackToTop, { passive: true });
+  toggleBackToTop();
+}());
+</script>
 
 </body>
 </html>

@@ -160,11 +160,15 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
 
 /* ---------- grain ---------- */
 /* absolute, not fixed: a fixed layer stays still while the page scrolls
-   underneath it, so a blend mode on it has to be recomputed against
-   fresh content every single scroll frame -- real, measurable jank on
-   phones. Absolute lets the browser composite it once against the
-   content beneath it and just translate the whole result during
-   scroll, same visual grain, without the per-frame re-blend cost. */
+   underneath it, forcing whatever's behind it to be recomposited every
+   scroll frame; absolute lets the browser composite it once and
+   translate the whole result during scroll instead.
+   mix-blend-mode stays -- tried dropping it too, but the grain SVG is
+   white noise, and white at any opacity without soft-light just washes
+   the whole page toward gray instead of reading as texture. soft-light
+   is specifically what keeps dark areas dark while still adding grain
+   to light ones, so it's load-bearing for how this is supposed to
+   look, not a free performance line to cut. */
 .grain {
   position: absolute;
   inset: 0;
@@ -181,11 +185,29 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
   opacity: 0;
   transform: translateY(28px);
   transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  /* The single biggest lever on a page this long: skip layout/paint
+     entirely for a section until it's near the viewport, instead of
+     the browser doing that work for all eleven sections' shadows,
+     gradients, and images up front. contain-intrinsic-size is this
+     class's own natural height at mobile widths (where the "sketchy
+     scrolling" report came from) -- it's what the browser reserves as
+     placeholder space before a section has actually been rendered, so
+     getting it close avoids a layout jump as each one comes into
+     view. Per-class overrides below refine it per section type. */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 700px;
 }
 .reveal.is-visible {
   opacity: 1;
   transform: translateY(0);
 }
+.feature.reveal { contain-intrinsic-size: auto 970px; }
+.live-panel.reveal { contain-intrinsic-size: auto 370px; }
+.homescreen.reveal { contain-intrinsic-size: auto 955px; }
+.notif-panel.reveal { contain-intrinsic-size: auto 720px; }
+.showcase.reveal { contain-intrinsic-size: auto 780px; }
+.trust.reveal { contain-intrinsic-size: auto 1020px; }
+.closing.reveal { contain-intrinsic-size: auto 430px; }
 
 .wrap {
   max-width: var(--content-w);
@@ -295,6 +317,16 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
   filter: blur(60px);
   z-index: 0;
   pointer-events: none;
+}
+/* filter: blur() forces the blob to be re-rasterized at its new
+   position/scale on every frame of the (infinite) animation below,
+   unlike a plain transform on unfiltered content -- real, continuous
+   cost for as long as it runs, whether the hero is on screen or
+   scrolled miles away. Paused once it isn't, see the IntersectionObserver
+   in the page's own <script>. */
+.hero-art.paused::before,
+.hero-art.paused::after {
+  animation-play-state: paused;
 }
 .hero-art::before {
   width: 62%;
@@ -955,32 +987,40 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
   transform: translateY(0) scale(0.97);
   box-shadow: 0 10px 20px -14px var(--shadow);
 }
-/* A slow breathing ring around the button, separate from its own
-   box-shadow (a ::after pseudo-element, not an animation on the
-   button itself) so the hover/focus box-shadow above can't fight the
-   animation's box-shadow keyframes over who wins each frame.
-   Animates transform/opacity, not box-shadow's spread -- a static
-   border pre-sized to the ring's full extent (inset: -14px, matching
-   the old spread-radius of 14px) scaled down and faded in, then
-   scaled up to its natural size while fading out. box-shadow forces a
-   real repaint every frame for as long as this runs, which is forever
-   (infinite); transform/opacity are compositor-only, so the same
-   "expanding ring" reads identically without the continuous repaint
-   cost -- this was a real, measurable source of scroll jank on phones. */
-.store-btn::after {
+/* A breathing double ring around the button, separate from its own
+   box-shadow (::after/::before pseudo-elements, not an animation on
+   the button itself) so the hover/focus box-shadow above can't fight
+   the animation's keyframes over who wins each frame.
+   Animates transform/opacity, not box-shadow's spread -- box-shadow
+   forces a real repaint every frame for as long as this runs, which
+   is forever (infinite); transform/opacity are compositor-only.
+   The scale is two numbers, not one: this button is a wide pill
+   (roughly 233x54), not a square, so shrinking it down uniformly by
+   one ratio (the first version of this fix) squashed the ring into
+   an off-shape oval instead of a smaller copy of the same pill.
+   scaleX/scaleY computed from the actual button box against the
+   ring's full extent (inset: -14px on each side, matching the old
+   box-shadow spread-radius) so it grows back to precisely the
+   button's own corner radius, not a distorted one.
+   Two rings staggered 1.2s apart (half the 2.4s loop) read as a
+   fuller, more layered pulse than one ring alone, at the same
+   per-frame cost -- both are still transform/opacity only. */
+.store-btn::after,
+.store-btn::before {
   content: '';
   position: absolute;
   inset: -14px;
   border-radius: inherit;
   border: 2px solid rgba(var(--accent-rgb), 0.45);
   opacity: 0;
-  transform: scale(0.8);
-  animation: store-btn-pulse 2.4s ease-in-out infinite;
+  transform: scale(0.893, 0.659);
+  animation: store-btn-pulse 2.4s ease-out infinite;
   pointer-events: none;
 }
+.store-btn::before { animation-delay: 1.2s; }
 @keyframes store-btn-pulse {
-  0% { transform: scale(0.8); opacity: 0.45; }
-  70%, 100% { transform: scale(1); opacity: 0; }
+  0% { transform: scale(0.893, 0.659); opacity: 0.5; }
+  70%, 100% { transform: scale(1, 1); opacity: 0; }
 }
 .store-btn-icon {
   font-size: 0.8rem;
@@ -1451,7 +1491,7 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
     <div class="trust-head">
       <p class="eyebrow">Privacy</p>
       <h2>Your notes never leave your phone.</h2>
-      <p>No account, no cloud, no server for your notes to ever touch. Everything lives in local storage on this device -- the way it's always worked, without a login screen bolted on top.</p>
+      <p>No account, no cloud, no server for your notes to ever touch. Everything lives in local storage on this device, the way it's always worked, without a login screen bolted on top.</p>
     </div>
     <div class="trust-grid">
       <div class="trust-item">
@@ -1467,7 +1507,7 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
       <div class="trust-item">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 3l7 3.5v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9v-5L12 3z"/><path d="M9 12l2 2 4-4"/></svg>
         <h3>Crash reports only, and optional</h3>
-        <p>If something breaks, an anonymous error report can help fix it -- never note content -- and it's one toggle away from off.</p>
+        <p>If something breaks, an anonymous error report can help fix it (never note content), and it's one toggle away from off.</p>
       </div>
     </div>
   </section>
@@ -1624,6 +1664,23 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
   // once per frame no matter how fast the scroll events fire.
   var heroArt = document.querySelector('.hero-art');
   var heroSection = document.getElementById('top');
+
+  // The glow blobs behind the hero phone (.hero-art::before/::after)
+  // animate transform forever, which is normally compositor-cheap --
+  // except they're also blurred (filter: blur(60px)), so every frame
+  // of that animation re-rasterizes the blur at the new position, real
+  // continuous cost that doesn't stop just because the hero scrolled
+  // out of view. Pausing it there (and resuming when it's back) is
+  // pure savings the rest of the time someone's reading the page.
+  if (heroArt && heroSection && 'IntersectionObserver' in window) {
+    var glowObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        heroArt.classList.toggle('paused', !entry.isIntersecting);
+      });
+    });
+    glowObserver.observe(heroSection);
+  }
+
   if (heroArt && heroSection && !reduceMotion) {
     var parallaxTicking = false;
     var updateParallax = function () {
