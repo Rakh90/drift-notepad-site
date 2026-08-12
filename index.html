@@ -180,6 +180,23 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
   opacity: 0.12;
 }
 
+/* ---------- perf diagnostic mode (?perf=hero-off) ---------- */
+/* Reported lag ("mud") tracks precisely with the hero being on screen --
+   clears once it's scrolled fully past. The two things that animate
+   continuously only there (until the existing IntersectionObserver pauses
+   them) are the glow blobs and the store button's pulse rings; this flag
+   kills both at once to confirm which side of the grain's mix-blend-mode
+   layer the cost is actually coming from. Toggled by a tiny inline script
+   right after <body> opens, before first paint. Not linked from the UI;
+   temporary, meant to be removed once the cause is confirmed. */
+.perf-hero-off .hero-art::before,
+.perf-hero-off .hero-art::after,
+.perf-hero-off .store-btn::before,
+.perf-hero-off .store-btn::after {
+  animation: none !important;
+  display: none !important;
+}
+
 /* ---------- scroll reveal ---------- */
 .reveal {
   opacity: 0;
@@ -1102,6 +1119,7 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
 </style>
 </head>
 <body>
+<script>if (location.search.indexOf('perf=hero-off') !== -1) document.body.classList.add('perf-hero-off');</script>
 
 <div class="grain" aria-hidden="true"></div>
 
