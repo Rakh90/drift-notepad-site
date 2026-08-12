@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Drift Notepad Tutorial: get the most out of every feature</title>
+<meta name="description" content="A full walkthrough of Drift Notepad's formatting, tables, and categories, with extra detail on the calendar, reminders, and customization options.">
+<style>
+
+:root {
+  color-scheme: dark;
+  --bg: #0b1a20;
+  --bg-elevated: #12262d;
+  --bg-elevated-2: #172c33;
+  --border: #21393f;
+  --text: #eef1ec;
+  --text-dim: #93a8a4;
+  --accent: #5cbbae;
+  --accent-rgb: 92, 187, 174;
+  --accent-strong: #7fd0c4;
+  --accent-soft: rgba(92, 187, 174, 0.14);
+  --warm: #e0995f;
+  --warm-soft: rgba(224, 153, 95, 0.10);
+  --frame-bg: #0e2229;
+  --shadow: rgba(4, 12, 15, 0.55);
+
+  --font-display: 'Fraunces', 'Iowan Old Style', Georgia, serif;
+  --font-body: 'IBM Plex Sans', -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+
+  --content-w: 1180px;
+  --pad-inline: clamp(1.5rem, 5vw, 4.5rem);
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    color-scheme: light;
+    --bg: #f5f0e4;
+    --bg-elevated: #ece3cd;
+    --bg-elevated-2: #e2d7bc;
+    --border: #d8cba9;
+    --text: #1c2b27;
+    --text-dim: #5d6c63;
+    --accent: #2f7d73;
+    --accent-rgb: 47, 125, 115;
+    --accent-strong: #256359;
+    --accent-soft: rgba(47, 125, 115, 0.10);
+    --warm: #ab5c2b;
+    --warm-soft: rgba(171, 92, 43, 0.08);
+    --frame-bg: #fbf7ee;
+    --shadow: rgba(90, 76, 47, 0.18);
+  }
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f5f0e4; --bg-elevated: #ece3cd; --bg-elevated-2: #e2d7bc; --border: #d8cba9;
+  --text: #1c2b27; --text-dim: #5d6c63; --accent: #2f7d73; --accent-rgb: 47, 125, 115;
+  --accent-strong: #256359; --accent-soft: rgba(47, 125, 115, 0.10); --warm: #ab5c2b;
+  --warm-soft: rgba(171, 92, 43, 0.08); --frame-bg: #fbf7ee; --shadow: rgba(90, 76, 47, 0.18);
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0b1a20; --bg-elevated: #12262d; --bg-elevated-2: #172c33; --border: #21393f;
+  --text: #eef1ec; --text-dim: #93a8a4; --accent: #5cbbae; --accent-rgb: 92, 187, 174;
+  --accent-strong: #7fd0c4; --accent-soft: rgba(92, 187, 174, 0.14); --warm: #e0995f;
+  --warm-soft: rgba(224, 153, 95, 0.10); --frame-bg: #0e2229; --shadow: rgba(4, 12, 15, 0.55);
+}
+
+@font-face { font-family: 'Fraunces'; font-style: normal; font-weight: 300 700; font-display: swap; src: url(../fonts/fraunces-normal.woff2) format('woff2'); }
+@font-face { font-family: 'Fraunces'; font-style: italic; font-weight: 400 600; font-display: swap; src: url(../fonts/fraunces-italic.woff2) format('woff2'); }
+@font-face { font-family: 'IBM Plex Sans'; font-style: normal; font-weight: 300 700; font-display: swap; src: url(../fonts/ibm-plex-sans.woff2) format('woff2'); }
+@font-face { font-family: 'IBM Plex Mono'; font-style: normal; font-weight: 400; font-display: swap; src: url(../fonts/ibm-plex-mono-400.woff2) format('woff2'); }
+@font-face { font-family: 'IBM Plex Mono'; font-style: normal; font-weight: 500; font-display: swap; src: url(../fonts/ibm-plex-mono-500.woff2) format('woff2'); }
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  position: relative;
+}
+a { color: inherit; }
+img { max-width: 100%; display: block; }
+
+::selection { background: var(--accent); color: var(--bg); }
+html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
+::-webkit-scrollbar { width: 11px; height: 11px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background-color: var(--border); border-radius: 999px; border: 3px solid var(--bg); background-clip: padding-box; }
+::-webkit-scrollbar-thumb:hover { background-color: var(--accent); }
+
+.grain {
+  position: fixed; inset: 0; z-index: 9999; pointer-events: none;
+  background-image: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMjAiIGhlaWdodD0iMjIwIj48ZmlsdGVyIGlkPSJuIj48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iMC44NSIgbnVtT2N0YXZlcz0iMiIgc3RpdGNoVGlsZXM9InN0aXRjaCIvPjxmZUNvbG9yTWF0cml4IHR5cGU9Im1hdHJpeCIgdmFsdWVzPSIwIDAgMCAwIDEgIDAgMCAwIDAgMSAgMCAwIDAgMCAxICAwIDAgMCAwLjA0IDAiLz48L2ZpbHRlcj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWx0ZXI9InVybCglMjNuKSIvPjwvc3ZnPg==);
+  background-size: 220px 220px;
+  mix-blend-mode: soft-light;
+  opacity: 0.12;
+}
+
+.wrap { max-width: var(--content-w); margin-inline: auto; padding-inline: var(--pad-inline); }
+
+.site-nav { display: flex; align-items: center; justify-content: space-between; padding-block: 1.75rem; }
+.wordmark { font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: 1.25rem; letter-spacing: 0.01em; text-decoration: none; color: var(--text); }
+.wordmark span { color: var(--accent); }
+.nav-link { font-family: var(--font-mono); font-size: 0.8125rem; letter-spacing: 0.03em; text-decoration: none; color: var(--text-dim); border-bottom: 1px solid transparent; padding-bottom: 2px; transition: color 0.15s ease, border-color 0.15s ease; }
+.nav-link:hover, .nav-link:focus-visible { color: var(--accent); border-color: var(--accent); }
+.nav-links { display: flex; align-items: center; gap: 1.5rem; }
+
+.eyebrow {
+  font-family: var(--font-mono); font-size: 0.8125rem; font-weight: 500; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--accent); margin: 0 0 1rem; display: inline-flex; align-items: center; gap: 0.55em;
+}
+.eyebrow::before {
+  content: ''; display: inline-block; width: 1.1em; height: 0.55em;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 10'%3E%3Cpath d='M0 6 C 3 1, 6 9, 10 5 S 16 1, 20 5' fill='none' stroke='%235cbbae' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-size: contain; flex-shrink: 0;
+}
+
+.link-quiet { font-family: var(--font-mono); font-size: 0.8125rem; letter-spacing: 0.03em; color: var(--text-dim); text-decoration: none; border-bottom: 1px solid var(--border); padding-bottom: 2px; transition: color 0.15s ease, border-color 0.15s ease; }
+.link-quiet:hover, .link-quiet:focus-visible { color: var(--accent); border-color: var(--accent); }
+
+/* ---------- tutorial hero ---------- */
+.tut-hero { padding-block: clamp(2.5rem, 6vw, 4.5rem) clamp(2rem, 5vw, 3rem); max-width: 62ch; }
+.tut-hero h1 {
+  font-family: var(--font-display); font-weight: 500; font-size: clamp(2.25rem, 3vw + 1.4rem, 3.5rem);
+  line-height: 1.05; letter-spacing: -0.01em; margin: 0 0 1.1rem; text-wrap: balance;
+}
+.tut-hero .lede { font-size: 1.125rem; color: var(--text-dim); max-width: 56ch; margin: 0 0 1.5rem; }
+
+.jump-row { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+.jump-row a {
+  font-family: var(--font-body); font-size: 0.9375rem; font-weight: 500; color: var(--text-dim);
+  text-decoration: none; border: 1px solid var(--border); border-radius: 999px; padding: 0.55rem 1.1rem;
+  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+.jump-row a:hover, .jump-row a:focus-visible { color: var(--text); border-color: var(--accent); background: var(--accent-soft); transform: translateY(-2px); }
+.jump-row a:active { transform: translateY(0) scale(0.95); }
+
+/* ---------- doc section ---------- */
+.doc-section { padding-block: clamp(3rem, 6vw, 5rem); border-top: 1px solid var(--border); }
+.doc-section-head { max-width: 62ch; margin: 0 0 2.5rem; }
+.doc-section-head h2 {
+  font-family: var(--font-display); font-weight: 500; font-size: clamp(1.9rem, 1.6vw + 1.2rem, 2.6rem);
+  line-height: 1.12; margin: 0 0 0.85rem; text-wrap: balance;
+}
+.doc-section-head p { color: var(--text-dim); margin: 0; }
+
+.doc-topics { display: grid; gap: 2.25rem; }
+.doc-topic h3 {
+  font-family: var(--font-body); font-size: 1.1875rem; font-weight: 600; margin: 0 0 0.6rem;
+  display: flex; align-items: center; gap: 0.55em;
+}
+.doc-topic h3 .topic-icon {
+  display: inline-flex; align-items: center; justify-content: center; width: 1.6em; height: 1.6em;
+  border-radius: 8px; background: var(--accent-soft); color: var(--accent); font-size: 0.85em; flex-shrink: 0;
+}
+.doc-topic p { color: var(--text-dim); margin: 0 0 0.6rem; max-width: 68ch; }
+.doc-topic p:last-child { margin-bottom: 0; }
+.doc-topic p strong { color: var(--text); font-weight: 600; }
+.doc-topic p code {
+  font-family: var(--font-mono); font-size: 0.875em; background: var(--bg-elevated);
+  border: 1px solid var(--border); border-radius: 5px; padding: 0.1em 0.4em;
+}
+
+/* Two-column topics-with-columns layout for text-dense, no-screenshot groups */
+.doc-topics.cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 3rem; row-gap: 2.25rem; }
+
+/* ---------- doc feature row (topic + real screenshot) ---------- */
+.doc-feature {
+  display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  gap: clamp(2rem, 5vw, 3.5rem); align-items: center; margin-bottom: clamp(3rem, 6vw, 4.5rem);
+}
+.doc-feature:last-child { margin-bottom: 0; }
+.doc-feature.reverse { grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); }
+.doc-feature.reverse .doc-feature-art { order: 2; }
+.doc-feature.reverse .doc-feature-copy { order: 1; }
+.doc-feature-art { justify-self: center; }
+.doc-feature-art .phone-frame { width: min(230px, 60vw); }
+.doc-feature-caption { text-align: center; font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-dim); margin-top: 0.85rem; letter-spacing: 0.02em; }
+
+.phone-frame {
+  position: relative; z-index: 1; width: min(300px, 78vw); aspect-ratio: 760 / 1351; border-radius: 22px;
+  border: 1.5px solid transparent;
+  background-image: linear-gradient(var(--frame-bg), var(--frame-bg)), linear-gradient(150deg, var(--warm), var(--accent) 55%, var(--accent-strong));
+  background-origin: border-box; background-clip: padding-box, border-box; overflow: hidden;
+  box-shadow: 0 30px 60px -20px var(--shadow), 0 8px 20px -10px var(--shadow), 0 0 50px -6px var(--accent-soft), 0 0 90px 4px var(--warm-soft);
+  transform: translateZ(0); backface-visibility: hidden; -webkit-backface-visibility: hidden;
+}
+.phone-frame img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
+
+/* ---------- callout ---------- */
+.callout {
+  background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 14px;
+  padding: 1.1rem 1.35rem; margin-top: 0.5rem; font-size: 0.9375rem; color: var(--text-dim);
+}
+.callout strong { color: var(--text); }
+
+@media (max-width: 900px) {
+  .doc-feature, .doc-feature.reverse { grid-template-columns: 1fr; }
+  .doc-feature.reverse .doc-feature-art, .doc-feature.reverse .doc-feature-copy { order: initial; }
+  .doc-feature-art { justify-self: center; }
+  .doc-topics.cols-2 { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .site-nav { flex-wrap: wrap; gap: 0.75rem; }
+}
+
+.site-footer { border-top: 1px solid var(--border); padding-block: 2.25rem; }
+.footer-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-dim); letter-spacing: 0.02em; }
+.footer-row a { color: var(--text-dim); text-decoration: none; border-bottom: 1px solid var(--border); }
+.footer-row a:hover, .footer-row a:focus-visible { color: var(--accent); border-color: var(--accent); }
+
+</style>
+</head>
+<body>
+
+<div class="grain" aria-hidden="true"></div>
+
+<div class="wrap">
+  <nav class="site-nav">
+    <a class="wordmark" href="../index.html#top">Drift <span>Notepad</span></a>
+    <div class="nav-links">
+      <a class="nav-link" href="../index.html">HOME</a>
+      <a class="nav-link" href="https://rakh90.github.io/drift-notepad-privacy-policy/">PRIVACY POLICY</a>
+    </div>
+  </nav>
+</div>
+
+<div class="wrap">
+  <section class="tut-hero" id="top">
+    <p class="eyebrow">Tutorial</p>
+    <h1>Everything Drift Notepad can do.</h1>
+    <p class="lede">A full walkthrough of every feature, with extra detail (and real screenshots) for the two places people ask about most: the calendar &amp; reminders, and how far the customization options actually go.</p>
+    <div class="jump-row">
+      <a href="#basics">Basics</a>
+      <a href="#organizing">Organizing</a>
+      <a href="#tables">Tables</a>
+      <a href="#calendar-reminders">Calendar &amp; Reminders</a>
+      <a href="#customization">Customization</a>
+      <a href="#photos">Photos</a>
+      <a href="#backup-security">Backup &amp; Security</a>
+    </div>
+  </section>
+</div>
+
+<!-- ============ BASICS ============ -->
+<div class="wrap">
+  <section class="doc-section" id="basics">
+    <div class="doc-section-head">
+      <p class="eyebrow">Basics</p>
+      <h2>Write it, format it, find it again.</h2>
+      <p>The everyday mechanics: typing, formatting, lists, and undoing a mistake.</p>
+    </div>
+    <div class="doc-topics cols-2">
+      <div class="doc-topic">
+        <h3><span class="topic-icon">📝</span>Creating &amp; editing notes</h3>
+        <p>Tap the <strong>+</strong> button on the dashboard to start a new note, or tap any existing note to open it. Tap the title to rename it, or tap anywhere in the body to start typing.</p>
+        <p>Notes save automatically as you type, so there's no separate save button. Web addresses become tappable links automatically as you type or paste them; even a bare domain like <code>example.com</code> works, no <code>http://</code> or <code>www.</code> required.</p>
+      </div>
+      <div class="doc-topic">
+        <h3><span class="topic-icon">B</span>Formatting text</h3>
+        <p>Tap into any line of text to bring up the sticky formatting toolbar above it. It stays reachable near the top of the screen even on a long note.</p>
+        <p><strong>Bold, italic, and underline</strong> apply to the whole line at once; tap the same button again to remove it. The "Aa" button changes text size, and the calendar button inserts today's date (or lets you pick another one) right where your cursor was.</p>
+      </div>
+      <div class="doc-topic">
+        <h3><span class="topic-icon">☑</span>Checklists &amp; lists</h3>
+        <p>The <code>T</code> <code>•</code> <code>#</code> <code>▢</code> buttons switch a line between plain text, a bullet, a numbered item, or a checkbox.</p>
+        <p>Press Enter on an empty list line to indent it one level; press it again to outdent, and a third time to drop back to plain text. Long-press a line's marker to drag and reorder it.</p>
+      </div>
+      <div class="doc-topic">
+        <h3><span class="topic-icon">☑</span>Select &amp; bulk-edit lines</h3>
+        <p>Tap the ☑ button in a note's formatting toolbar to turn on line selection. Press and hold any line, then drag up or down to highlight a range.</p>
+        <p>Selections don't have to be one continuous run: press and hold another line to add just that line to a growing selection. The toolbar then swaps to bulk actions, letting you switch every selected line's type, toggle bold/italic/underline, or delete them all at once.</p>
+      </div>
+      <div class="doc-topic">
+        <h3><span class="topic-icon">↩</span>Undo</h3>
+        <p>The undo button (appears once you've made a change) reverts the most recent edit to a note: text, title, category, background, or an inserted date.</p>
+        <p>It only covers the current editing session, meant for quickly reverting a mistake rather than stepping back through every change ever made.</p>
+      </div>
+      <div class="doc-topic">
+        <h3><span class="topic-icon">📅</span>Calendar date picker</h3>
+        <p>The calendar button in a note's formatting toolbar opens a built-in date picker, so there's no fighting with your device's native one.</p>
+        <p>Browse up to 5 years in either direction and tap a day to insert that date wherever your cursor was.</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ============ ORGANIZING ============ -->
+<div class="wrap">
+  <section class="doc-section" id="organizing">
+    <div class="doc-section-head">
+      <p class="eyebrow">Organizing</p>
+      <h2>Keep hundreds of notes from turning into a junk drawer.</h2>
+      <p>Categories, folders, templates, search, and everything else that keeps a growing pile of notes navigable.</p>
+    </div>
+    <div class="doc-topics cols-2">
+      <div class="doc-topic">
+        <h3><span class="topic-icon">🏷</span>Categories</h3>
+        <p>Tap "Uncategorized" (or a note's existing categories) near the top of a note to assign one or more categories, or create a new one on the spot with its own color.</p>
+        <p>Category chips at the top of the dashboard filter to just that category. Long-press a second chip to add it to the filter and see notes tagged with <em>every</em> picked category at once. Manage, rename, recolor, reorder, or delete categories any time from Settings.</p>
+      </div>
+      <div class="doc-topic">
+        <h3><span class="topic-icon">📁</span>Folder view</h3>
+        <p>Tap the 📁 icon on the dashboard to switch the category chips into a grid of folder tiles instead, each showing how many notes it holds. Your choice of chips or folders is remembered next time you open the app.</p>
+        <p>Want one category to stand out? Tap the small folder icon next to its color dot in Settings to give just that category its own icon, independent of the app-wide theme.</p>
+      </div>
+      <div class="doc-topic">
+        <h3><span class="topic-icon">📄</span>Templates</h3>
+        <p>Save any note as a reusable template from its editor menu (📑 button), then start new notes from it via the "New note" screen.</p>
+        <p>Templates carry over their body text, background, and categories, so you don't have to rebuild a note from scratch every time. Manage every note and table template in one place from Settings &rarr; Templates.</p>
+      </div>
+      <div class="doc-topic">
+        <h3><span class="topic-icon">🔍</span>Search, sort &amp; pinned notes</h3>
+        <p>The search icon filters notes by title or body text as you type, and jumps straight to where it matched inside the note with every occurrence highlighted.</p>
+        <p>The sort icon reorders the dashboard by last edited, date created, title, or category. Pin any note (📌) to keep it at the top regardless of sort order.</p>
+      </div>
+      <div class="doc-topic">
+        <h3><span class="topic-icon">☑</span>Multi-select &amp; batch categories</h3>
+        <p>Tap the select icon on the dashboard, then tap notes to select several at once. From there, move them all to trash, pin/unpin them together, or add or remove a category across every selected note in one step.</p>
+      </div>
+      <div class="doc-topic">
+        <h3><span class="topic-icon">🗑</span>Trash &amp; recovery</h3>
+        <p>Deleting a note moves it to Trash instead of removing it right away. Open Trash from the dashboard to restore a note or delete it permanently; anything left for 30 days is removed automatically.</p>
+      </div>
+      <div class="doc-topic">
+        <h3><span class="topic-icon">↕</span>Reordering by dragging</h3>
+        <p>Notes on the dashboard (when sorted "Manually"), header icons, categories in Settings, and list lines in a note can all be long-pressed and dragged to reorder. Hold for about half a second until it "picks up," then drag it where you want.</p>
+      </div>
+      <div class="doc-topic">
+        <h3><span class="topic-icon">📷</span>Photos</h3>
+        <p>Add photos to a note with the Camera, Gallery, or Files buttons at the bottom of its editor. The first photo shows as a thumbnail on the note's dashboard card, with a badge for how many it holds.</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ============ TABLES ============ -->
+<div class="wrap">
+  <section class="doc-section" id="tables">
+    <div class="doc-feature">
+      <div class="doc-feature-copy">
+        <p class="eyebrow">Tables</p>
+        <h2>Numbers that don't need a spreadsheet.</h2>
+        <p>Any note can hold as many tables as you like. Tap <strong>"+ Add table"</strong> below the note body, then either start from the Mileage preset or build your own columns from scratch.</p>
+        <p>Every column has a type: <strong>Text, Number, or Date.</strong> Number columns keep a running total at the bottom, and Date columns work with that table's "Today" and "Pick Date" buttons.</p>
+        <p>Pressing Enter moves to the next cell, and Enter in the very last cell adds a fresh row automatically. Tap a table's ✎ to add, rename, retype, remove, or drag-reorder its columns, and save the whole layout as a reusable template right from there. Export any table to CSV from the button next to its name.</p>
+      </div>
+      <div class="doc-feature-art">
+        <div class="phone-frame">
+          <img src="../images/feature-tables.webp" alt="A mileage table inside a note with rows of dates, start and end points, and a running mileage total" loading="lazy" />
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ============ CALENDAR & REMINDERS ============ -->
+<div class="wrap">
+  <section class="doc-section" id="calendar-reminders">
+    <div class="doc-section-head">
+      <p class="eyebrow">Calendar &amp; Reminders</p>
+      <h2>The part people always ask more about.</h2>
+      <p>A note can hold its own built-in calendar for anything tied to a date: appointments, medication, bills, anything. Every reminder in the app, calendar or not, funnels into one place you can check at a glance.</p>
+    </div>
+
+    <div class="doc-feature">
+      <div class="doc-feature-copy">
+        <h3 style="font-family:var(--font-display);font-weight:500;font-size:1.5rem;margin-bottom:0.75rem;">A day, mapped inside the note.</h3>
+        <p>Tap <strong>"+ Add calendar"</strong> below a note's body, then tap any day to add an entry: pick a type (Appointment, Medication, Other, or create your own with a custom name, icon, and color), give it a label, and optionally set one or more times.</p>
+        <p>Once a day has more than one entry, they group into <strong>Morning, Afternoon, and Evening</strong> automatically, so a busy day reads as organized blocks instead of one long list. Tap the circle next to an entry to mark it done. An entry with a time that passes unmarked gets flagged <strong>"⚠ Missed"</strong> instead, and its day gets a red badge on the calendar grid so nothing slips by unnoticed.</p>
+        <p>Need something tracked across several days? The "Repeat" choice offers a date range (a course of medication) or weekly for a number of weeks (a standing appointment). Either way, editing or completing one occurrence only affects that single day, with a one-tap option to remove the entire series if plans change.</p>
+      </div>
+      <div class="doc-feature-art">
+        <div class="phone-frame">
+          <img src="images/calendar-day-view.webp" alt="A day view inside a note's calendar, showing entries grouped into Morning, Afternoon, and Evening, one marked complete" loading="lazy" />
+        </div>
+        <p class="doc-feature-caption">A real day view: one entry done, two with live reminders attached</p>
+      </div>
+    </div>
+
+    <div class="doc-feature reverse">
+      <div class="doc-feature-copy">
+        <p>Adding an entry gives you the full picture in one sheet: pick a type, name it, choose how it repeats, and set one or more times, with an optional reminder that turns into a real device notification, the same as any other reminder.</p>
+        <p>A home-screen widget showing today's agenda is available too, entirely optional. Long-press an empty spot on your home screen, choose Widgets, and find Drift Notepad. It only shows what's tracked; it can't mark anything done on its own.</p>
+      </div>
+      <div class="doc-feature-art">
+        <div class="phone-frame">
+          <img src="images/add-entry-form.webp" alt="The New Entry form for a calendar day, showing type picker, repeat options, and time settings" loading="lazy" />
+        </div>
+        <p class="doc-feature-caption">Adding a new entry: type, repeat, and time, all in one sheet</p>
+      </div>
+    </div>
+
+    <div class="doc-feature">
+      <div class="doc-feature-copy">
+        <h3 style="font-family:var(--font-display);font-weight:500;font-size:1.5rem;margin-bottom:0.75rem;">Timers and alarms, wherever you need them.</h3>
+        <p>Tap the 🔔 button in any note's editor to set a reminder: either a <strong>Timer</strong> (a preset, or a custom minutes + seconds duration from now) or an <strong>Alarm</strong> (a specific date and time).</p>
+        <p>Scope it to the "Whole note" or to "This item" (whichever line or checklist item you were last typing in). A note-level reminder shows a live countdown right in the editor header; a line-level one shows as a small badge attached to that item.</p>
+        <p>On Android, a fired reminder's notification itself has <strong>Snooze, Mark Done, and Acknowledge</strong> buttons, so you can handle it without ever opening the app. Acknowledge just stops it from ringing again without marking anything done, for something you've seen and are handling but haven't finished yet.</p>
+      </div>
+      <div class="doc-feature-art">
+        <div class="phone-frame">
+          <img src="images/reminder-alarm-sheet.webp" alt="The Reminder sheet set to Alarm mode, with Whole note or This item scope, and date/time pickers" loading="lazy" />
+        </div>
+        <p class="doc-feature-caption">Whole note or a single item, timer or a specific date/time, all in one sheet</p>
+      </div>
+    </div>
+
+    <div class="doc-feature reverse">
+      <div class="doc-feature-copy">
+        <p>The dashboard has its own 🔔 icon that lists <strong>every</strong> whole-note and per-item reminder running across all your notes in one place, soonest first, with a live countdown and a tap to jump straight there.</p>
+        <p>Calendar entry reminders don't clutter this list; they live in the 🗓 calendar icon right next to it instead, which shows everything tracked for today across every note in the app.</p>
+        <div class="callout"><strong>Heads up:</strong> reminders fire as real device notifications, so make sure notifications are allowed for the app. On Android 12+, if a reminder shows a banner about "exact alarms," tap it and turn that on in system settings. Without it, the OS can delay delivery by several minutes.</div>
+      </div>
+      <div class="doc-feature-art">
+        <div class="phone-frame">
+          <img src="images/reminders-dashboard-list.webp" alt="The dashboard's reminders list showing an active timer counting down" loading="lazy" />
+        </div>
+        <p class="doc-feature-caption">Every active reminder, across every note, in one list</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ============ CUSTOMIZATION ============ -->
+<div class="wrap">
+  <section class="doc-section" id="customization">
+    <div class="doc-section-head">
+      <p class="eyebrow">Customization</p>
+      <h2>How far the "make it yours" options actually go.</h2>
+      <p>Two independent looks, Vibrant and Professional, each with their own full set of backgrounds, plus folder icon themes, dashboard layout, and note-level locking, all mixable per note.</p>
+    </div>
+
+    <div class="doc-feature">
+      <div class="doc-feature-copy">
+        <h3 style="font-family:var(--font-display);font-weight:500;font-size:1.5rem;margin-bottom:0.75rem;">Vibrant or buttoned-up -- switch anytime.</h3>
+        <p><strong>Vibrant</strong> leans into color: animated gradient themes, a lively dashboard, folder icons with personality. <strong>Professional</strong> strips that back to a flat, muted palette. Light, Dark, and Brown are free; Blue, Slate, Legal Pad, and Graph Paper are part of the paid unlock, with the last two adding ruled lines or a grid to the note itself.</p>
+        <p>Switch the whole app between them any time from Settings under "Look"; it's a top-level choice, not per-note. Independently, <strong>Dashboard layout</strong> switches the category chips into a grid of folder tiles (or back), and every note can still have its own individual background regardless of which mode the app is in overall.</p>
+      </div>
+      <div class="doc-feature-art">
+        <div class="phone-frame">
+          <img src="images/settings-look-layout.webp" alt="Settings showing the Vibrant/Professional toggle, Folders/Categories dashboard layout toggle, and background swatches" loading="lazy" />
+        </div>
+        <p class="doc-feature-caption">Look, dashboard layout, and background swatches, all in Settings</p>
+      </div>
+    </div>
+
+    <div class="doc-feature reverse">
+      <div class="doc-feature-copy">
+        <p>Every note can have its own background too. Tap the 🎨 button in its editor and choose from solid colors or the animated gradient themes, including Rainbow, which automatically switches to white text so it stays readable over every color in the gradient.</p>
+        <p>Prefer to leave it alone? Set a default background for new notes and a separate one for the dashboard itself, both in Settings, so every fresh note starts exactly how you like without picking each time.</p>
+      </div>
+      <div class="doc-feature-art">
+        <div class="phone-frame">
+          <img src="images/settings-professional-presets.webp" alt="Settings in Professional mode, showing the Light, Dark, Brown, Blue, Slate, Legal Pad, and Graph Paper preset colors" loading="lazy" />
+        </div>
+        <p class="doc-feature-caption">Professional mode's flat, muted preset palette</p>
+      </div>
+    </div>
+
+    <div class="doc-feature">
+      <div class="doc-feature-copy">
+        <h3 style="font-family:var(--font-display);font-weight:500;font-size:1.5rem;margin-bottom:0.75rem;">Fifteen folder styles, and a lock for anything private.</h3>
+        <p>Pick from 15 different folder icon styles under "Folder icon theme" in Settings; it applies app-wide whenever the dashboard is in folder view. Want one category to stand out from the rest? Give just that category its own icon from its row in Settings, independent of the app-wide theme.</p>
+        <p>Set a PIN in Settings, then lock any individual note from its editor (🔒). A locked note shows only its title on the dashboard until the PIN is entered. Once unlocked, it stays that way for the rest of your session. Change or remove the PIN any time from the same screen.</p>
+      </div>
+      <div class="doc-feature-art">
+        <div class="phone-frame">
+          <img src="images/settings-folder-icons.webp" alt="Settings showing the full grid of 15 folder icon theme options" loading="lazy" />
+        </div>
+        <p class="doc-feature-caption">All 15 folder icon styles, picked app-wide</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ============ BACKUP & SECURITY ============ -->
+<div class="wrap">
+  <section class="doc-section" id="backup-security">
+    <div class="doc-section-head">
+      <p class="eyebrow">Backup &amp; Security</p>
+      <h2>Your notes, safely portable.</h2>
+      <p>Nothing here requires an account; backups are just files you control.</p>
+    </div>
+    <div class="doc-topics cols-2">
+      <div class="doc-topic">
+        <h3><span class="topic-icon">⬇</span>Backup (export / import)</h3>
+        <p>Export saves every note and category to a single file you can keep as a backup or move to another device. Import reads one of those files back in, adding its notes and categories alongside whatever you already have. Both live in Settings, under Backup.</p>
+      </div>
+      <div class="doc-topic">
+        <h3><span class="topic-icon">🔓</span>Lifetime unlock</h3>
+        <p>Voice memos, reminders, tables, the calendar tracker, note lock, and most background themes and colors are part of a <strong>one-time paid unlock</strong>: pay once, keep them forever. No subscription, no account beyond your existing Google account.</p>
+        <p>Reinstalled the app or switched devices? Tap "Restore purchase" in Settings to recover it for free. No need to buy it again as long as you're signed into the same Google account.</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="wrap tideline-wrap" style="padding-block:1rem;"></div>
+
+<footer class="site-footer">
+  <div class="wrap footer-row">
+    <span>&copy; 2026 Drift Notepad</span>
+    <a href="../index.html">&larr; Back to driftnotepad.com</a>
+    <a href="https://rakh90.github.io/drift-notepad-privacy-policy/">Privacy Policy</a>
+  </div>
+</footer>
+
+</body>
+</html>
