@@ -199,25 +199,36 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
   opacity: 0;
   transform: translateY(28px);
   transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  /* The single biggest lever on a page this long: skip layout/paint
+     entirely for a section until it's needed, instead of the browser
+     doing that work for all eleven sections' shadows, gradients, and
+     images up front. Dropping this outright (an earlier attempt at
+     fixing reported lag at each section's boundary) traded that hitch
+     for a worse one -- lag through the whole page, from all that
+     deferred work landing at once instead of being spread out. The
+     actual fix is contain-intrinsic-size below plus the early-trigger
+     IntersectionObserver in the page's own <script>: it flips this to
+     "visible" (permanently) well before a section nears the viewport,
+     off the scroll-frame critical path, decoupled in time from the
+     is-visible class above that drives the fade-in transition itself.
+     Two separate observers, two separate timings, on purpose -- sharing
+     one would put the layout-unhide cost right back on the same frame
+     as the transition, which is the collision that caused the original
+     boundary lag in the first place. */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 700px;
 }
 .reveal.is-visible {
   opacity: 1;
   transform: translateY(0);
 }
-/* content-visibility: auto used to sit here as "the single biggest lever
-   on a page this long" -- skip layout/paint for a section until it's near
-   the viewport. #formatting already carried an exception, opted out
-   because it was reported on-device as hard lag right at the hero/first-
-   section boundary, in both scroll directions: the browser's deferred
-   layout work for the section and this same opacity/transform transition
-   both land on the same scroll frame, and that collision is what read as
-   lag, not the transition or content-visibility alone.
-   Confirmed on-device (via a since-removed diagnostic mode that stripped
-   grain/glow/pulse/reveal all at once) that the lag persisted past that
-   one exception -- every other .reveal section hits the identical
-   collision at its own boundary. So the fix that #formatting got is now
-   every section's fix; content-visibility is gone here rather than
-   special-cased further. */
+.feature.reveal { contain-intrinsic-size: auto 970px; }
+.live-panel.reveal { contain-intrinsic-size: auto 370px; }
+.homescreen.reveal { contain-intrinsic-size: auto 955px; }
+.notif-panel.reveal { contain-intrinsic-size: auto 720px; }
+.showcase.reveal { contain-intrinsic-size: auto 780px; }
+.trust.reveal { contain-intrinsic-size: auto 1020px; }
+.closing.reveal { contain-intrinsic-size: auto 430px; }
 
 .wrap {
   max-width: var(--content-w);
@@ -1568,7 +1579,7 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
   var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var revealEls = document.querySelectorAll('.reveal');
   if (reduceMotion || !('IntersectionObserver' in window)) {
-    revealEls.forEach(function (el) { el.classList.add('is-visible'); });
+    revealEls.forEach(function (el) { el.classList.add('is-visible'); el.style.contentVisibility = 'visible'; });
   } else {
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
@@ -1579,6 +1590,26 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
       });
     }, { threshold: 0.15, rootMargin: '0px 0px -8% 0px' });
     revealEls.forEach(function (el) { io.observe(el); });
+
+    // A section's content-visibility: auto (see .reveal in the page's own
+    // <style>) defers its layout/paint until the browser decides it's
+    // getting close -- but that decision can still land on the same
+    // scroll frame as this section crossing into view, competing with
+    // the fade-in transition above right when both are triggered by the
+    // same scroll motion. A second, much earlier-firing observer forces
+    // that deferred work to happen well before a section is anywhere
+    // near the viewport, while the user is still comfortably scrolling
+    // through earlier content, so it's done and paid for by the time
+    // the tight-threshold observer above ever fires.
+    var cvIo = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.style.contentVisibility = 'visible';
+          cvIo.unobserve(entry.target);
+        }
+      });
+    }, { rootMargin: '0px 0px 800px 0px' });
+    revealEls.forEach(function (el) { cvIo.observe(el); });
   }
 
   var backToTop = document.getElementById('back-to-top');
