@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Drift Notepad Privacy Policy: what stays on your device</title>
+<meta name="description" content="Drift Notepad's privacy policy: no account, no server, no analytics, no ads. Everything you create stays on your device.">
+<style>
+
+:root {
+  color-scheme: dark;
+  --bg: #0b1a20;
+  --bg-elevated: #12262d;
+  --bg-elevated-2: #172c33;
+  --border: #21393f;
+  --text: #eef1ec;
+  --text-dim: #93a8a4;
+  --accent: #5cbbae;
+  --accent-rgb: 92, 187, 174;
+  --accent-strong: #7fd0c4;
+  --accent-soft: rgba(92, 187, 174, 0.14);
+  --warm: #e0995f;
+  --warm-soft: rgba(224, 153, 95, 0.10);
+  --frame-bg: #0e2229;
+  --shadow: rgba(4, 12, 15, 0.55);
+
+  --font-display: 'Fraunces', 'Iowan Old Style', Georgia, serif;
+  --font-body: 'IBM Plex Sans', -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+
+  --content-w: 1180px;
+  --pad-inline: clamp(1.5rem, 5vw, 4.5rem);
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    color-scheme: light;
+    --bg: #f5f0e4; --bg-elevated: #ece3cd; --bg-elevated-2: #e2d7bc; --border: #d8cba9;
+    --text: #1c2b27; --text-dim: #5d6c63; --accent: #2f7d73; --accent-rgb: 47, 125, 115;
+    --accent-strong: #256359; --accent-soft: rgba(47, 125, 115, 0.10); --warm: #ab5c2b;
+    --warm-soft: rgba(171, 92, 43, 0.08); --frame-bg: #fbf7ee; --shadow: rgba(90, 76, 47, 0.18);
+  }
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f5f0e4; --bg-elevated: #ece3cd; --bg-elevated-2: #e2d7bc; --border: #d8cba9;
+  --text: #1c2b27; --text-dim: #5d6c63; --accent: #2f7d73; --accent-rgb: 47, 125, 115;
+  --accent-strong: #256359; --accent-soft: rgba(47, 125, 115, 0.10); --warm: #ab5c2b;
+  --warm-soft: rgba(171, 92, 43, 0.08); --frame-bg: #fbf7ee; --shadow: rgba(90, 76, 47, 0.18);
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0b1a20; --bg-elevated: #12262d; --bg-elevated-2: #172c33; --border: #21393f;
+  --text: #eef1ec; --text-dim: #93a8a4; --accent: #5cbbae; --accent-rgb: 92, 187, 174;
+  --accent-strong: #7fd0c4; --accent-soft: rgba(92, 187, 174, 0.14); --warm: #e0995f;
+  --warm-soft: rgba(224, 153, 95, 0.10); --frame-bg: #0e2229; --shadow: rgba(4, 12, 15, 0.55);
+}
+
+@font-face { font-family: 'Fraunces'; font-style: normal; font-weight: 300 700; font-display: swap; src: url(../fonts/fraunces-normal.woff2) format('woff2'); }
+@font-face { font-family: 'IBM Plex Sans'; font-style: normal; font-weight: 300 700; font-display: swap; src: url(../fonts/ibm-plex-sans.woff2) format('woff2'); }
+@font-face { font-family: 'IBM Plex Mono'; font-style: normal; font-weight: 400; font-display: swap; src: url(../fonts/ibm-plex-mono-400.woff2) format('woff2'); }
+@font-face { font-family: 'IBM Plex Mono'; font-style: normal; font-weight: 500; font-display: swap; src: url(../fonts/ibm-plex-mono-500.woff2) format('woff2'); }
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  position: relative;
+}
+a { color: inherit; }
+
+::selection { background: var(--accent); color: var(--bg); }
+html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
+::-webkit-scrollbar { width: 11px; height: 11px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background-color: var(--border); border-radius: 999px; border: 3px solid var(--bg); background-clip: padding-box; }
+::-webkit-scrollbar-thumb:hover { background-color: var(--accent); }
+
+.wrap { max-width: var(--content-w); margin-inline: auto; padding-inline: var(--pad-inline); }
+
+.site-nav { display: flex; align-items: center; justify-content: space-between; padding-block: 1.75rem; }
+.wordmark { font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: 1.25rem; letter-spacing: 0.01em; text-decoration: none; color: var(--text); }
+.wordmark span { color: var(--accent); }
+.nav-link { font-family: var(--font-mono); font-size: 0.8125rem; letter-spacing: 0.03em; text-decoration: none; color: var(--text-dim); border-bottom: 1px solid transparent; padding-bottom: 2px; transition: color 0.15s ease, border-color 0.15s ease; }
+.nav-link:hover, .nav-link:focus-visible { color: var(--accent); border-color: var(--accent); }
+.nav-links { display: flex; align-items: center; gap: 1.5rem; }
+
+.eyebrow {
+  font-family: var(--font-mono); font-size: 0.8125rem; font-weight: 500; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--accent); margin: 0 0 1rem; display: inline-flex; align-items: center; gap: 0.55em;
+}
+.eyebrow::before {
+  content: ''; display: inline-block; width: 1.1em; height: 0.55em;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 10'%3E%3Cpath d='M0 6 C 3 1, 6 9, 10 5 S 16 1, 20 5' fill='none' stroke='%235cbbae' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-size: contain; flex-shrink: 0;
+}
+
+.policy { padding-block: clamp(2rem, 5vw, 3.5rem) clamp(3rem, 6vw, 5rem); max-width: 68ch; }
+.policy h1 {
+  font-family: var(--font-display); font-weight: 500; font-size: clamp(1.9rem, 2vw + 1.2rem, 2.75rem);
+  line-height: 1.1; letter-spacing: -0.01em; margin: 0 0 0.5rem;
+}
+.policy .updated { font-family: var(--font-mono); font-size: 0.8125rem; color: var(--text-dim); margin-bottom: 2rem; }
+.policy p { color: var(--text-dim); margin: 0 0 1rem; }
+.policy p strong { color: var(--text); font-weight: 600; }
+.policy h2 {
+  font-family: var(--font-body); font-weight: 600; font-size: 1.1875rem; color: var(--text);
+  margin: 2.25rem 0 0.85rem;
+}
+.policy ul { margin: 0 0 1rem; padding-left: 1.25rem; color: var(--text-dim); }
+.policy li { margin-bottom: 0.5rem; }
+.policy code {
+  font-family: var(--font-mono); font-size: 0.875em; background: var(--bg-elevated);
+  border: 1px solid var(--border); border-radius: 5px; padding: 0.1em 0.4em; color: var(--text);
+}
+
+.site-footer { border-top: 1px solid var(--border); padding-block: 2.25rem; }
+.footer-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-dim); letter-spacing: 0.02em; }
+.footer-row a { color: var(--text-dim); text-decoration: none; border-bottom: 1px solid var(--border); }
+.footer-row a:hover, .footer-row a:focus-visible { color: var(--accent); border-color: var(--accent); }
+
+@media (max-width: 600px) {
+  .site-nav { flex-wrap: wrap; gap: 0.75rem; }
+}
+
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <nav class="site-nav">
+    <a class="wordmark" href="../index.html#top">Drift <span>Notepad</span></a>
+    <div class="nav-links">
+      <a class="nav-link" href="../index.html">HOME</a>
+      <a class="nav-link" href="../tutorial/">TUTORIAL</a>
+    </div>
+  </nav>
+</div>
+
+<div class="wrap">
+  <section class="policy">
+    <p class="eyebrow">Privacy Policy</p>
+    <h1>Privacy Policy for Drift Notepad</h1>
+    <p class="updated">Last updated: August 5, 2026</p>
+
+    <p>Drift Notepad is a notes app built to keep everything on your device. This page explains, plainly, what that means for your data.</p>
+
+    <h2>The short version</h2>
+    <p>Drift Notepad does not collect, transmit, or share your notes or any other content you create. There is no account, no server, no analytics, and no advertising in this app. Everything you create, notes, photos, voice memos, tables, categories, templates, and reminders, is stored only in the app's local storage on your own device. The one exception is optional, anonymous crash/error reporting, described below, which is on by default but can be turned off anytime in Settings.</p>
+
+    <h2>What the app stores locally</h2>
+    <p>All of the following stays on your device and is never sent anywhere:</p>
+    <ul>
+      <li>Note text, formatting, checklists, and tables you create</li>
+      <li>Photos you attach to a note</li>
+      <li>Voice memos you record within a note</li>
+      <li>Categories, templates, and app settings, including an optional PIN used to lock individual notes</li>
+      <li>Reminders (timers and alarms) you set on a note</li>
+    </ul>
+
+    <h2>Permissions the app asks for, and why</h2>
+    <ul>
+      <li><strong>Microphone:</strong> only used while you're actively recording a voice memo inside a note. The recording is saved locally on your device; it is never uploaded or transmitted anywhere.</li>
+      <li><strong>Notifications:</strong> used to alert you when a reminder (timer or alarm) you set on a note goes off. Notification scheduling happens entirely on your device via Android's own notification system.</li>
+      <li><strong>Photos / files access:</strong> used only when you choose to attach a photo to a note, or export/import a backup file. The app never scans or accesses files you haven't explicitly picked.</li>
+    </ul>
+
+    <h2>Crash and error reporting</h2>
+    <p>Drift Notepad uses Firebase Crashlytics, a Google service, to help catch and fix bugs. When the app hits an unexpected error, it sends a diagnostic report containing:</p>
+    <ul>
+      <li>The error message and a technical stack trace (which part of the app's code failed)</li>
+      <li>Device model, OS version, and app version</li>
+      <li>An anonymous installation identifier, not linked to your name, email, or any account, since the app has none</li>
+    </ul>
+    <p>This report never includes your note content, photos, or voice memos, and it isn't linked to your identity in any way. There's no way to trace a report back to a specific person, since the app has no accounts, names, or emails to begin with. Crashlytics processes this data on our behalf as our crash-reporting service provider; it is not shared with any other third party or used for advertising. It's automatically deleted after 90 days.</p>
+    <p>This is on by default but fully optional: you can turn it off anytime in <strong>Settings &rarr; Diagnostics &rarr; Send crash reports</strong>.</p>
+
+    <h2>Data sharing</h2>
+    <p>Drift Notepad does not share your notes or any other content you create with any third party; the app has no server to share it from. The only data that ever leaves your device is the optional, anonymous crash/error reporting described above. There are no analytics SDKs and no ad networks in the app.</p>
+
+    <h2>Exporting and sharing your own notes</h2>
+    <p>The app lets you export a backup of your notes (or a single note) to a file, which you can save to your device or share using Android's own share sheet, for example to send a note to a friend, or move a backup to another device. That sharing is a deliberate action you take, using the file-sharing tools already built into your phone; the app itself does not have a server to receive or store that data.</p>
+
+    <h2>Deleting your data</h2>
+    <p>You're always in full control:</p>
+    <ul>
+      <li>Delete an individual note any time. It goes to Trash and is permanently removed after 30 days, or you can empty Trash immediately.</li>
+      <li>Uninstalling the app removes all of its local data from your device immediately.</li>
+      <li>Turn off crash reporting anytime in Settings. It's anonymous and not linked to you, and is automatically deleted after 90 days either way.</li>
+    </ul>
+
+    <h2>Children's privacy</h2>
+    <p>Drift Notepad does not knowingly collect personal information from anyone, including children. The app has no accounts and no way to identify who is using it; the only data the app ever collects is the anonymous, non-personal crash/error reporting described above.</p>
+
+    <h2>Changes to this policy</h2>
+    <p>If this policy ever changes, for example if a future version of the app adds a feature that does involve a network request, this page will be updated first, with a new "Last updated" date above.</p>
+
+    <h2>Contact</h2>
+    <p>Questions about this policy can be sent to the developer, Rakh Studio, via the contact details listed on the Drift Notepad Google Play Store listing.</p>
+  </section>
+</div>
+
+<footer class="site-footer">
+  <div class="wrap footer-row">
+    <span>&copy; 2026 Drift Notepad</span>
+    <a href="../index.html">&larr; Back to driftnotepad.com</a>
+  </div>
+</footer>
+
+</body>
+</html>
