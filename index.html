@@ -180,21 +180,24 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
   opacity: 0.12;
 }
 
-/* ---------- perf diagnostic mode (?perf=hero-off / ?perf=no-grain) ---------- */
+/* ---------- perf diagnostic mode (?perf=hero-off / ?perf=no-grain / ?perf=no-phone-fx) ---------- */
 /* Reported lag ("mud") tracks precisely with the hero being on screen --
-   clears once it's scrolled fully past. ?perf=hero-off ruled out the two
-   things that animate continuously only there (the glow blobs and the
-   store button's pulse rings) -- mud persisted with both off. Next
-   candidate: the grain layer's mix-blend-mode. It covers the whole page,
-   but if Android isn't caching the blended result the way the "composite
-   once, translate during scroll" comment below assumes, cost would scale
-   with how visually complex the content underneath it is -- and the hero
-   (gradient text with its own drop-shadow glow, a 4-layer box-shadow on
-   the phone frame) is the most complex section on the page. ?perf=no-grain
-   removes grain alone, blobs/rings left running, to attribute the cost
-   cleanly. Toggled by a tiny inline script right after <body> opens,
-   before first paint. Not linked from the UI; temporary, meant to be
-   removed once the cause is confirmed. */
+   clears once it's scrolled fully past. Ruled out so far: the glow blobs
+   and store button pulse rings (?perf=hero-off), and the grain layer's
+   mix-blend-mode (?perf=no-grain) -- mud persisted through both.
+   Next candidate, and the one thing in the hero neither test touched:
+   the hero screenshot's phone frame. It's the only .phone-frame on the
+   page carrying rotate(-3deg) + translateZ(0) + backface-visibility:
+   hidden (added for sharper text under rotation, see the comment above
+   .hero-art .phone-frame below) stacked with a 4-layer box-shadow and a
+   border-radius clip -- forced GPU-layer promotion plus a rounded-corner
+   mask is a known expensive combination on some Android GPU drivers,
+   where the mask gets recomputed every frame instead of cached.
+   ?perf=no-phone-fx drops the rotate/layer-promotion transform and
+   collapses the box-shadow to a single flat one, on the hero frame only,
+   to attribute the cost cleanly. Toggled by a tiny inline script right
+   after <body> opens, before first paint. Not linked from the UI;
+   temporary, meant to be removed once the cause is confirmed. */
 .perf-hero-off .hero-art::before,
 .perf-hero-off .hero-art::after,
 .perf-hero-off .store-btn::before,
@@ -204,6 +207,11 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
 }
 .perf-no-grain .grain {
   display: none !important;
+}
+.perf-no-phone-fx .hero-art .phone-frame {
+  transform: none !important;
+  backface-visibility: visible !important;
+  box-shadow: 0 20px 40px -20px var(--shadow) !important;
 }
 
 /* ---------- scroll reveal ---------- */
@@ -1131,6 +1139,7 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
 <script>
 if (location.search.indexOf('perf=hero-off') !== -1) document.body.classList.add('perf-hero-off');
 if (location.search.indexOf('perf=no-grain') !== -1) document.body.classList.add('perf-no-grain');
+if (location.search.indexOf('perf=no-phone-fx') !== -1) document.body.classList.add('perf-no-phone-fx');
 </script>
 
 <div class="grain" aria-hidden="true"></div>
