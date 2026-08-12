@@ -189,9 +189,16 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
    past it together. Grain itself is confirmed fine everywhere else on
    the page; it only needs to stay off while stacked on top of the
    hero's other cost. See the IntersectionObserver in the page's own
-   <script> that toggles this while the hero (#top) intersects. */
+   <script> that toggles this while the hero (#top) intersects.
+   opacity, not display: toggling display forces the browser to tear
+   down and reinsert a full-page, mix-blend-mode layer into the render
+   tree -- a real layout/paint hit landing right at the moment the
+   observer fires, which is exactly the hero/Formatting boundary. That
+   traded the original cost for a new hitch in the same spot. opacity
+   is compositor-only, so the same on/off toggle costs nothing extra
+   right at that crossing. */
 .grain.hero-visible {
-  display: none;
+  opacity: 0;
 }
 
 /* ---------- scroll reveal ---------- */
