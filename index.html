@@ -1008,13 +1008,14 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
    Two rings staggered 1.2s apart (half the 2.4s loop) read as a
    fuller, more layered pulse than one ring alone, at the same
    per-frame cost -- both are still transform/opacity only.
-   Scoped to .closing's copy of this button only: this ran forever on
-   the hero's copy too, one of several moderate-cost hero effects that
-   individually tested fine but added up to reported on-device scroll
-   lag when running concurrently (see the comment above .hero-art).
-   Cut there; the closing CTA is far enough from that to keep it. */
-.closing .store-btn::after,
-.closing .store-btn::before {
+   Briefly scoped to just .closing's copy of this button, cut from the
+   hero's as one of several moderate-cost hero effects that individually
+   tested fine but added up to reported on-device scroll lag when
+   running concurrently (see the comment above .hero-art). Restored to
+   both once the hero's other, larger contributors (entrance animation,
+   glow blobs) were already gone and the page had room for it again. */
+.store-btn::after,
+.store-btn::before {
   content: '';
   position: absolute;
   inset: -14px;
@@ -1075,7 +1076,7 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
 #back-to-top svg { width: 18px; height: 18px; }
 @media (prefers-reduced-motion: reduce) {
   #back-to-top { transition: opacity 0.2s ease; transform: none !important; }
-  .closing .store-btn::after { animation: none; }
+  .store-btn::after { animation: none; }
 }
 
 /* ---------- footer ---------- */
