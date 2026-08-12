@@ -180,70 +180,30 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
   opacity: 0.12;
 }
 
-/* ---------- perf diagnostic mode (?perf=minimal) ---------- */
-/* Strips every decorative extra at once -- grain, glow blobs, pulse
-   rings, reveal fade-ins and their content-visibility -- so a single
-   on-device test says whether the lag is even about these effects at
-   all. Toggled by a tiny inline script right after <body> opens, before
-   first paint, based on the URL's ?perf=minimal param. Not linked from
-   anywhere in the UI; a temporary tool for tracking down the reported
-   scroll lag, meant to be removed once that's resolved. */
-.perf-minimal .grain,
-.perf-minimal .hero-art::before,
-.perf-minimal .hero-art::after,
-.perf-minimal .store-btn::before,
-.perf-minimal .store-btn::after {
-  display: none !important;
-}
-.perf-minimal .reveal {
-  content-visibility: visible !important;
-  opacity: 1 !important;
-  transform: none !important;
-  transition: none !important;
-}
-.perf-minimal .hero-copy > *,
-.perf-minimal .hero-art {
-  animation: none !important;
-  opacity: 1 !important;
-  transform: none !important;
-}
-
 /* ---------- scroll reveal ---------- */
 .reveal {
   opacity: 0;
   transform: translateY(28px);
   transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-  /* The single biggest lever on a page this long: skip layout/paint
-     entirely for a section until it's near the viewport, instead of
-     the browser doing that work for all eleven sections' shadows,
-     gradients, and images up front. contain-intrinsic-size is this
-     class's own natural height at mobile widths (where the "sketchy
-     scrolling" report came from) -- it's what the browser reserves as
-     placeholder space before a section has actually been rendered, so
-     getting it close avoids a layout jump as each one comes into
-     view. Per-class overrides below refine it per section type. */
-  content-visibility: auto;
-  contain-intrinsic-size: auto 700px;
 }
 .reveal.is-visible {
   opacity: 1;
   transform: translateY(0);
 }
-/* Formatting sits directly below the hero -- close enough to the initial
-   viewport that skip-rendering it barely saves anything, but it still pays
-   the "sudden paint" cost every time it crosses in or out of view, right at
-   the hero/first-section boundary. That's a bad trade this close to the
-   top, so it keeps the .reveal fade-in but opts out of content-visibility
-   specifically. Reported on-device as lag hitting hard exactly at that
-   boundary, in both scroll directions. */
-#formatting.reveal { content-visibility: visible; }
-.feature.reveal { contain-intrinsic-size: auto 970px; }
-.live-panel.reveal { contain-intrinsic-size: auto 370px; }
-.homescreen.reveal { contain-intrinsic-size: auto 955px; }
-.notif-panel.reveal { contain-intrinsic-size: auto 720px; }
-.showcase.reveal { contain-intrinsic-size: auto 780px; }
-.trust.reveal { contain-intrinsic-size: auto 1020px; }
-.closing.reveal { contain-intrinsic-size: auto 430px; }
+/* content-visibility: auto used to sit here as "the single biggest lever
+   on a page this long" -- skip layout/paint for a section until it's near
+   the viewport. #formatting already carried an exception, opted out
+   because it was reported on-device as hard lag right at the hero/first-
+   section boundary, in both scroll directions: the browser's deferred
+   layout work for the section and this same opacity/transform transition
+   both land on the same scroll frame, and that collision is what read as
+   lag, not the transition or content-visibility alone.
+   Confirmed on-device (via a since-removed diagnostic mode that stripped
+   grain/glow/pulse/reveal all at once) that the lag persisted past that
+   one exception -- every other .reveal section hits the identical
+   collision at its own boundary. So the fix that #formatting got is now
+   every section's fix; content-visibility is gone here rather than
+   special-cased further. */
 
 .wrap {
   max-width: var(--content-w);
@@ -1142,7 +1102,6 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
 </style>
 </head>
 <body>
-<script>if (location.search.indexOf('perf=minimal') !== -1) document.body.classList.add('perf-minimal');</script>
 
 <div class="grain" aria-hidden="true"></div>
 
