@@ -314,16 +314,17 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
   content: '';
   position: absolute;
   border-radius: 50%;
-  filter: blur(60px);
   z-index: 0;
   pointer-events: none;
 }
-/* filter: blur() forces the blob to be re-rasterized at its new
-   position/scale on every frame of the (infinite) animation below,
-   unlike a plain transform on unfiltered content -- real, continuous
-   cost for as long as it runs, whether the hero is on screen or
-   scrolled miles away. Paused once it isn't, see the IntersectionObserver
-   in the page's own <script>. */
+/* A soft-edged radial-gradient stands in for what used to be a solid
+   circle plus filter: blur(60px) -- blur forces the browser to
+   re-rasterize the whole blob at its new position/scale on every frame
+   of the (infinite) animation below, which is real, continuous cost
+   for as long as it runs. A gradient fades out on its own, so the
+   transform animation stays compositor-only (cheap) instead. Paused
+   off-screen too, see the IntersectionObserver in the page's own
+   <script>, as a further belt-and-suspenders measure. */
 .hero-art.paused::before,
 .hero-art.paused::after {
   animation-play-state: paused;
@@ -333,7 +334,7 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
   height: 62%;
   top: 4%;
   left: 8%;
-  background: var(--accent);
+  background: radial-gradient(circle, var(--accent) 0%, var(--accent) 45%, transparent 100%);
   opacity: 0.28;
   animation: glow-drift 14s ease-in-out infinite;
 }
@@ -342,7 +343,7 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
   height: 46%;
   bottom: 6%;
   right: 4%;
-  background: var(--warm);
+  background: radial-gradient(circle, var(--warm) 0%, var(--warm) 45%, transparent 100%);
   opacity: 0.20;
   animation: glow-drift 18s ease-in-out infinite reverse;
 }
@@ -1666,12 +1667,11 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
   var heroSection = document.getElementById('top');
 
   // The glow blobs behind the hero phone (.hero-art::before/::after)
-  // animate transform forever, which is normally compositor-cheap --
-  // except they're also blurred (filter: blur(60px)), so every frame
-  // of that animation re-rasterizes the blur at the new position, real
-  // continuous cost that doesn't stop just because the hero scrolled
-  // out of view. Pausing it there (and resuming when it's back) is
-  // pure savings the rest of the time someone's reading the page.
+  // animate transform forever -- compositor-cheap now that they're a
+  // radial-gradient instead of a blurred solid circle, but there's still
+  // no reason to keep it running once the hero has scrolled out of view.
+  // Pausing it there (and resuming when it's back) is pure savings the
+  // rest of the time someone's reading the page.
   if (heroArt && heroSection && 'IntersectionObserver' in window) {
     var glowObserver = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
