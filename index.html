@@ -213,6 +213,40 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
   backface-visibility: visible !important;
   box-shadow: 0 20px 40px -20px var(--shadow) !important;
 }
+/* ?perf=hero-min: stacks all three exclusions above plus one thing none
+   of them touched -- the hero's own entrance animation (.hero-copy > *
+   and .hero-art both fade/slide in via hero-in, ~1.5s including delays).
+   Each individual exclusion left the mud in place, which raises a
+   different possibility: no single hero effect is expensive enough
+   alone to cross the jank threshold on this device, but several
+   moderate-cost things running at once during that ~1.5s window --
+   entrance animations, blobs, pulse rings, grain's blend, the phone
+   frame's layer promotion -- add up past it together. This flag renders
+   the hero as plainly as possible, all at once, to test that directly.
+   If mud clears here, it's cumulative cost and the shipped version needs
+   trimming, not a single culprit removed. If it doesn't, the cause isn't
+   in the hero's CSS/animations at all. */
+.perf-hero-min .hero-art::before,
+.perf-hero-min .hero-art::after,
+.perf-hero-min .store-btn::before,
+.perf-hero-min .store-btn::after {
+  animation: none !important;
+  display: none !important;
+}
+.perf-hero-min .grain {
+  display: none !important;
+}
+.perf-hero-min .hero-art .phone-frame {
+  transform: none !important;
+  backface-visibility: visible !important;
+  box-shadow: 0 20px 40px -20px var(--shadow) !important;
+}
+.perf-hero-min .hero-copy > *,
+.perf-hero-min .hero-art {
+  animation: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+}
 
 /* ---------- scroll reveal ---------- */
 .reveal {
@@ -1140,6 +1174,7 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
 if (location.search.indexOf('perf=hero-off') !== -1) document.body.classList.add('perf-hero-off');
 if (location.search.indexOf('perf=no-grain') !== -1) document.body.classList.add('perf-no-grain');
 if (location.search.indexOf('perf=no-phone-fx') !== -1) document.body.classList.add('perf-no-phone-fx');
+if (location.search.indexOf('perf=hero-min') !== -1) document.body.classList.add('perf-hero-min');
 </script>
 
 <div class="grain" aria-hidden="true"></div>
