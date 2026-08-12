@@ -159,8 +159,14 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
 ::-webkit-scrollbar-thumb:hover { background-color: var(--accent); }
 
 /* ---------- grain ---------- */
+/* absolute, not fixed: a fixed layer stays still while the page scrolls
+   underneath it, so a blend mode on it has to be recomputed against
+   fresh content every single scroll frame -- real, measurable jank on
+   phones. Absolute lets the browser composite it once against the
+   content beneath it and just translate the whole result during
+   scroll, same visual grain, without the per-frame re-blend cost. */
 .grain {
-  position: fixed;
+  position: absolute;
   inset: 0;
   z-index: 9999;
   pointer-events: none;
@@ -952,19 +958,29 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
 /* A slow breathing ring around the button, separate from its own
    box-shadow (a ::after pseudo-element, not an animation on the
    button itself) so the hover/focus box-shadow above can't fight the
-   animation's box-shadow keyframes over who wins each frame. */
+   animation's box-shadow keyframes over who wins each frame.
+   Animates transform/opacity, not box-shadow's spread -- a static
+   border pre-sized to the ring's full extent (inset: -14px, matching
+   the old spread-radius of 14px) scaled down and faded in, then
+   scaled up to its natural size while fading out. box-shadow forces a
+   real repaint every frame for as long as this runs, which is forever
+   (infinite); transform/opacity are compositor-only, so the same
+   "expanding ring" reads identically without the continuous repaint
+   cost -- this was a real, measurable source of scroll jank on phones. */
 .store-btn::after {
   content: '';
   position: absolute;
-  inset: 0;
+  inset: -14px;
   border-radius: inherit;
-  box-shadow: 0 0 0 0 rgba(var(--accent-rgb), 0.45);
+  border: 2px solid rgba(var(--accent-rgb), 0.45);
+  opacity: 0;
+  transform: scale(0.8);
   animation: store-btn-pulse 2.4s ease-in-out infinite;
   pointer-events: none;
 }
 @keyframes store-btn-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(var(--accent-rgb), 0.45); }
-  50% { box-shadow: 0 0 0 14px rgba(var(--accent-rgb), 0); }
+  0% { transform: scale(0.8); opacity: 0.45; }
+  70%, 100% { transform: scale(1); opacity: 0; }
 }
 .store-btn-icon {
   font-size: 0.8rem;
