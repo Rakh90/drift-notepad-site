@@ -406,8 +406,19 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
     0 0 50px -6px var(--accent-soft), 0 0 90px 4px var(--warm-soft);
   transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.45s ease;
 }
-.hero-art .phone-frame { transform: rotate(-3deg); }
-.hero-art .phone-frame:hover { transform: rotate(-1deg) translateY(-8px); }
+/* translateZ(0) + backface-visibility: hidden force this onto the GPU's
+   higher-quality compositing path -- without them, a rotated element's
+   image content gets resampled through a noticeably blurrier filter on
+   standard (non-retina) displays, since there's less oversampling
+   headroom to hide it at 1x than at 2x/3x. Confirmed via screenshot
+   diffing: identical rotation, dramatically sharper text with these two
+   properties added, at every scale tested. */
+.hero-art .phone-frame {
+  transform: rotate(-3deg) translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.hero-art .phone-frame:hover { transform: rotate(-1deg) translateY(-8px) translateZ(0); }
 .feature-art .phone-frame:hover,
 .showcase-frame:hover { transform: translateY(-6px); }
 .phone-frame:hover,
@@ -984,10 +995,14 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
 
 @media (max-width: 760px) {
   .hero { grid-template-columns: 1fr; text-align: left; }
-  .hero-art { justify-self: start; }
+  /* Centered, not left (start) -- start made sense sharing a row with
+     the copy on desktop, but once the grid stacks to a single column
+     here, a left-aligned phone mockup just reads as off-balance against
+     the page's own centered .wrap padding either side of it. */
+  .hero-art { justify-self: center; }
   .feature, .feature.reverse { grid-template-columns: 1fr; }
   .feature.reverse .feature-art, .feature.reverse .feature-copy { order: initial; }
-  .feature-art { justify-self: start; }
+  .feature-art { justify-self: center; }
   /* Stacked layout means the row's total height now includes the image
      below the text, so a glow centered on the row's own 50% vertical
      mid-point lands well below the copy instead of behind it -- pull it
@@ -1388,6 +1403,10 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
 
 <script>
 (function () {
+  // Every resync() below (one per toggle) so a later load/font event can
+  // re-measure every pill against whichever button is active *right now*,
+  // without each toggle needing to know about those events itself.
+  var toggleResyncs = [];
   function makeToggle(toggleId, thumbId, imgs, attr) {
     var toggle = document.getElementById(toggleId);
     var thumb = document.getElementById(thumbId);
@@ -1412,10 +1431,11 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
     // Measure the real active button instead of trusting a hardcoded
     // guess, so the pill lines up correctly before any click.
     placeThumb(buttons[0]);
-    window.addEventListener('resize', function () {
-      var active = toggle.querySelector('button.active') || buttons[0];
-      placeThumb(active);
-    });
+    var resync = function () {
+      placeThumb(toggle.querySelector('button.active') || buttons[0]);
+    };
+    window.addEventListener('resize', resync);
+    toggleResyncs.push(resync);
   }
   makeToggle('theme-toggle', 'toggle-thumb', { vibrant: document.getElementById('img-vibrant'), professional: document.getElementById('img-professional') }, 'data-theme-choice');
   makeToggle('layout-toggle', 'layout-thumb', { grid: document.getElementById('img-grid'), list: document.getElementById('img-list') }, 'data-layout-choice');
@@ -1429,6 +1449,20 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
     brown: document.getElementById('img-brown'),
     legal: document.getElementById('img-legal'),
   }, 'data-scheme-choice');
+
+  // placeThumb() above runs the instant this script executes, measuring
+  // each button's real rendered width -- but if the page's own webfonts
+  // (see the @font-face rules up top) haven't swapped in yet at that
+  // exact moment, that measurement is against fallback-font metrics,
+  // which run narrower than 'IBM Plex Sans'. The pill then stays sized
+  // to the fallback text forever (nothing else ever re-measures it),
+  // clipping the real, wider label -- reported on-device as the "Holo"
+  // pill cutting off its own text. Re-running every toggle's resync once
+  // fonts are confirmed ready (and again on window load, as a second
+  // safety net for slow devices) closes that race outright.
+  var resyncAll = function () { toggleResyncs.forEach(function (fn) { fn(); }); };
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(resyncAll);
+  window.addEventListener('load', resyncAll);
 
   // A CSS animation (unlike a transition) outranks an element's own
   // hover/active transform in the cascade for as long as it's still
