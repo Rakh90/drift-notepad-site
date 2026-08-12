@@ -201,6 +201,14 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
   opacity: 1;
   transform: translateY(0);
 }
+/* Formatting sits directly below the hero -- close enough to the initial
+   viewport that skip-rendering it barely saves anything, but it still pays
+   the "sudden paint" cost every time it crosses in or out of view, right at
+   the hero/first-section boundary. That's a bad trade this close to the
+   top, so it keeps the .reveal fade-in but opts out of content-visibility
+   specifically. Reported on-device as lag hitting hard exactly at that
+   boundary, in both scroll directions. */
+#formatting.reveal { content-visibility: visible; }
 .feature.reveal { contain-intrinsic-size: auto 970px; }
 .live-panel.reveal { contain-intrinsic-size: auto 370px; }
 .homescreen.reveal { contain-intrinsic-size: auto 955px; }
@@ -1173,7 +1181,7 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
     </div>
     <div class="feature-art">
       <div class="phone-frame">
-        <img src="images/feature-formatting.webp" loading="lazy" alt="A note with bold, italic, and underlined text alongside a bulleted list and checklist" />
+        <img src="images/feature-formatting.webp" alt="A note with bold, italic, and underlined text alongside a bulleted list and checklist" />
       </div>
     </div>
   </section>
