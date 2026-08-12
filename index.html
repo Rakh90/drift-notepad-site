@@ -201,6 +201,34 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
   opacity: 0;
 }
 
+/* ---------- perf diagnostic mode (?perf=fmt-min) ---------- */
+/* Lag still reported specifically in/around Formatting (section 2)
+   after three targeted fixes there (content-visibility exemption,
+   grain's display->opacity switch) didn't clear it. Reasoning from the
+   code/comments alone hasn't found the actual cause in that spot the
+   way isolating hero effects one at a time did earlier -- so back to
+   the same method instead of guessing again. This strips everything
+   even loosely near Formatting at once: grain entirely (not just
+   during the hero), the reveal fade/transform transition on this
+   section specifically, the wavy tideline dividers above and below it,
+   and its phone frame's box-shadow. Toggled by a tiny inline script
+   right after <body> opens, before first paint. Not linked from the
+   UI; temporary, meant to be removed once the cause is confirmed. */
+.perf-fmt-min .grain {
+  display: none !important;
+}
+.perf-fmt-min #formatting.reveal {
+  opacity: 1 !important;
+  transform: none !important;
+  transition: none !important;
+}
+.perf-fmt-min .tideline-wrap {
+  display: none !important;
+}
+.perf-fmt-min #formatting .phone-frame {
+  box-shadow: none !important;
+}
+
 /* ---------- scroll reveal ---------- */
 .reveal {
   opacity: 0;
@@ -1102,6 +1130,7 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
 </style>
 </head>
 <body>
+<script>if (location.search.indexOf('perf=fmt-min') !== -1) document.body.classList.add('perf-fmt-min');</script>
 
 <div class="grain" aria-hidden="true"></div>
 
