@@ -180,53 +180,26 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
   opacity: 0.12;
 }
 
-/* Scroll lag reported on-device tracked exactly with the hero being on
-   screen. Isolating each hero effect one at a time (glow blobs, pulse
-   rings, this grain layer, the phone frame's rotate/shadow stack) never
-   cleared it individually -- only disabling all of them at once did,
-   meaning no single one crosses the jank threshold alone, but several
-   running concurrently during the hero's first second or two add up
-   past it together. Grain itself is confirmed fine everywhere else on
-   the page; it only needs to stay off while stacked on top of the
-   hero's other cost. See the IntersectionObserver in the page's own
-   <script> that toggles this while the hero (#top) intersects.
-   opacity, not display: toggling display forces the browser to tear
-   down and reinsert a full-page, mix-blend-mode layer into the render
-   tree -- a real layout/paint hit landing right at the moment the
-   observer fires, which is exactly the hero/Formatting boundary. That
-   traded the original cost for a new hitch in the same spot. opacity
-   is compositor-only, so the same on/off toggle costs nothing extra
-   right at that crossing. */
-.grain.hero-visible {
+/* Scroll lag reported on-device tracked with the hero and Formatting
+   (the first two things anyone scrolls through) being on screen.
+   Isolating effects one at a time -- glow blobs, pulse rings, this
+   grain layer, phone frame rotate/shadow stacks, Formatting's own
+   reveal transition, the tideline dividers flanking it -- never
+   cleared it individually in either zone, only disabling everything
+   in a zone at once did. No single effect crosses the jank threshold
+   alone; several running concurrently during page load's first second
+   or two add up past it together. Grain is confirmed fine everywhere
+   else on the page; it only needs to stay off while stacked on top of
+   that early cost. See the IntersectionObserver in the page's own
+   <script> that toggles this while the hero (#top) or Formatting
+   intersects. opacity, not display: toggling display forces the
+   browser to tear down and reinsert a full-page, mix-blend-mode layer
+   into the render tree, a real layout/paint hit landing right at the
+   moment the observer fires -- exactly the boundary this exists to be
+   smooth across. opacity is compositor-only, so the same on/off
+   toggle costs nothing extra at either crossing. */
+.grain.dimmed {
   opacity: 0;
-}
-
-/* ---------- perf diagnostic mode (?perf=fmt-min) ---------- */
-/* Lag still reported specifically in/around Formatting (section 2)
-   after three targeted fixes there (content-visibility exemption,
-   grain's display->opacity switch) didn't clear it. Reasoning from the
-   code/comments alone hasn't found the actual cause in that spot the
-   way isolating hero effects one at a time did earlier -- so back to
-   the same method instead of guessing again. This strips everything
-   even loosely near Formatting at once: grain entirely (not just
-   during the hero), the reveal fade/transform transition on this
-   section specifically, the wavy tideline dividers above and below it,
-   and its phone frame's box-shadow. Toggled by a tiny inline script
-   right after <body> opens, before first paint. Not linked from the
-   UI; temporary, meant to be removed once the cause is confirmed. */
-.perf-fmt-min .grain {
-  display: none !important;
-}
-.perf-fmt-min #formatting.reveal {
-  opacity: 1 !important;
-  transform: none !important;
-  transition: none !important;
-}
-.perf-fmt-min .tideline-wrap {
-  display: none !important;
-}
-.perf-fmt-min #formatting .phone-frame {
-  box-shadow: none !important;
 }
 
 /* ---------- scroll reveal ---------- */
@@ -271,6 +244,22 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
    entirely and just render like normal content -- no deferral, no
    early-trigger race to lose. */
 .feature.reveal { content-visibility: visible; }
+/* Formatting specifically (not Tables or Calendar) also drops the
+   fade/transform transition itself and its phone frame's box-shadow --
+   lag was still reported there after the content-visibility exemption
+   above, and cumulative-cost testing confirmed it's these two, stacked
+   with grain and the tideline dividers that used to flank this section
+   (removed from the markup), during page load's first second or two.
+   Same reasoning as the content-visibility exemption: this close to the
+   top, skip the fanfare rather than try to make it free. */
+#formatting.reveal {
+  opacity: 1;
+  transform: none;
+  transition: none;
+}
+#formatting .phone-frame {
+  box-shadow: none;
+}
 .live-panel.reveal { contain-intrinsic-size: auto 370px; }
 .homescreen.reveal { contain-intrinsic-size: auto 955px; }
 .notif-panel.reveal { contain-intrinsic-size: auto 720px; }
@@ -1130,7 +1119,6 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
 </style>
 </head>
 <body>
-<script>if (location.search.indexOf('perf=fmt-min') !== -1) document.body.classList.add('perf-fmt-min');</script>
 
 <div class="grain" aria-hidden="true"></div>
 
@@ -1174,20 +1162,6 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
   </section>
 </div>
 
-<div class="wrap tideline-wrap"><svg class="tideline" viewBox="0 0 800 40" preserveAspectRatio="none" aria-hidden="true">
-  <defs>
-    <linearGradient id="tideGrad" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="var(--warm)" stop-opacity="0"/>
-      <stop offset="10%" stop-color="var(--warm)" stop-opacity="1"/>
-      <stop offset="55%" stop-color="var(--accent)" stop-opacity="1"/>
-      <stop offset="90%" stop-color="var(--accent-strong)" stop-opacity="1"/>
-      <stop offset="100%" stop-color="var(--accent-strong)" stop-opacity="0"/>
-    </linearGradient>
-  </defs>
-  <path d="M0 26 C 80 8, 140 40, 220 26 S 360 8, 440 26 S 580 40, 660 26 S 760 12, 800 26" fill="none" stroke="url(#tideGrad)" stroke-width="1" opacity="0.35"/>
-  <path d="M0 18 C 80 0, 140 32, 220 18 S 360 0, 440 18 S 580 32, 660 18 S 760 4, 800 18" fill="none" stroke="url(#tideGrad)" stroke-width="2.5" stroke-linecap="round"/>
-</svg></div>
-
 <div class="wrap">
   <section class="feature reveal" id="formatting">
     <div class="feature-copy">
@@ -1203,20 +1177,6 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
     </div>
   </section>
 </div>
-
-<div class="wrap tideline-wrap"><svg class="tideline" viewBox="0 0 800 40" preserveAspectRatio="none" aria-hidden="true">
-  <defs>
-    <linearGradient id="tideGrad" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="var(--warm)" stop-opacity="0"/>
-      <stop offset="10%" stop-color="var(--warm)" stop-opacity="1"/>
-      <stop offset="55%" stop-color="var(--accent)" stop-opacity="1"/>
-      <stop offset="90%" stop-color="var(--accent-strong)" stop-opacity="1"/>
-      <stop offset="100%" stop-color="var(--accent-strong)" stop-opacity="0"/>
-    </linearGradient>
-  </defs>
-  <path d="M0 26 C 80 8, 140 40, 220 26 S 360 8, 440 26 S 580 40, 660 26 S 760 12, 800 26" fill="none" stroke="url(#tideGrad)" stroke-width="1" opacity="0.35"/>
-  <path d="M0 18 C 80 0, 140 32, 220 18 S 360 0, 440 18 S 580 32, 660 18 S 760 4, 800 18" fill="none" stroke="url(#tideGrad)" stroke-width="2.5" stroke-linecap="round"/>
-</svg></div>
 
 <div class="wrap">
   <section class="feature reverse reveal" id="tables">
@@ -1668,25 +1628,34 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
   window.addEventListener('scroll', toggleBackToTop, { passive: true });
   toggleBackToTop();
 
-  // Scroll lag reported on-device tracked precisely with the hero being
-  // on screen, and turned out to be cumulative cost from several
-  // moderate-weight hero effects running at once rather than any single
-  // one -- the entrance animation and glow blobs were cut outright for
-  // that (see the comment above .hero-art), but grain's full-page
-  // mix-blend-mode layer is worth keeping everywhere else on the page,
-  // just not stacked on top of the hero's own cost. Hiding it only while
-  // the hero intersects the viewport, and letting it back in the moment
-  // it doesn't, keeps the texture everywhere it was actually confirmed
-  // fine and removes it only from the one window it wasn't.
+  // Scroll lag reported on-device tracked with the hero and then
+  // Formatting being on screen -- the first two things anyone scrolls
+  // through -- and turned out to be cumulative cost from several
+  // moderate-weight effects running at once in each zone rather than
+  // any single one. The entrance animation and glow blobs were cut
+  // outright for the hero (see the comment above .hero-art); Formatting
+  // lost its reveal transition, phone frame shadow, and flanking
+  // tideline dividers (see the comment above #formatting.reveal). But
+  // grain's full-page mix-blend-mode layer is worth keeping everywhere
+  // else on the page, just not stacked on top of that early cost.
+  // Hiding it while either zone intersects the viewport, and letting it
+  // back in once both don't, keeps the texture everywhere it was
+  // actually confirmed fine and removes it only from the two windows it
+  // wasn't. Tracks intersection per target since a single shared
+  // callback's entries only ever cover whichever target just changed,
+  // not the other one's current state.
   var grainEl = document.querySelector('.grain');
-  var heroSection = document.getElementById('top');
-  if (grainEl && heroSection && 'IntersectionObserver' in window) {
+  var grainZoneEls = [document.getElementById('top'), document.getElementById('formatting')].filter(Boolean);
+  if (grainEl && grainZoneEls.length && 'IntersectionObserver' in window) {
+    var grainZoneState = {};
     var grainObserver = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
-        grainEl.classList.toggle('hero-visible', entry.isIntersecting);
+        grainZoneState[entry.target.id] = entry.isIntersecting;
       });
+      var anyZoneVisible = grainZoneEls.some(function (el) { return grainZoneState[el.id]; });
+      grainEl.classList.toggle('dimmed', anyZoneVisible);
     });
-    grainObserver.observe(heroSection);
+    grainZoneEls.forEach(function (el) { grainObserver.observe(el); });
   }
 }());
 </script>
