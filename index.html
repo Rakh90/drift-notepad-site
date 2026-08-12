@@ -204,32 +204,27 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
 }
 
 /* ---------- scroll reveal ---------- */
+/* This used to fade/slide every section in via a transition, triggered
+   by an IntersectionObserver adding an is-visible class. Retired
+   site-wide: what started as a Formatting-only exception (its own
+   transition colliding with content-visibility's deferred layout work
+   landing on the same scroll frame) turned out to generalize to every
+   section on the page, one at a time, as each got reported laggy in
+   turn after the previous one was fixed -- Formatting, then Tables and
+   Calendar, then the rest. Rather than keep chasing that section by
+   section, every section now just appears as normal content: no
+   opacity/transform animation, no per-section override needed, nothing
+   left to collide with anything else.
+   content-visibility: auto stays -- skip layout/paint entirely for a
+   section until it's needed, instead of the browser doing that work for
+   all eleven sections' shadows, gradients, and images up front. The
+   early-trigger IntersectionObserver in the page's own <script> flips
+   this to "visible" (permanently) well before a section nears the
+   viewport, off the scroll-frame critical path -- unrelated to, and
+   unaffected by, dropping the transition above. */
 .reveal {
-  opacity: 0;
-  transform: translateY(28px);
-  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-  /* The single biggest lever on a page this long: skip layout/paint
-     entirely for a section until it's needed, instead of the browser
-     doing that work for all eleven sections' shadows, gradients, and
-     images up front. Dropping this outright (an earlier attempt at
-     fixing reported lag at each section's boundary) traded that hitch
-     for a worse one -- lag through the whole page, from all that
-     deferred work landing at once instead of being spread out. The
-     actual fix is contain-intrinsic-size below plus the early-trigger
-     IntersectionObserver in the page's own <script>: it flips this to
-     "visible" (permanently) well before a section nears the viewport,
-     off the scroll-frame critical path, decoupled in time from the
-     is-visible class above that drives the fade-in transition itself.
-     Two separate observers, two separate timings, on purpose -- sharing
-     one would put the layout-unhide cost right back on the same frame
-     as the transition, which is the collision that caused the original
-     boundary lag in the first place. */
   content-visibility: auto;
   contain-intrinsic-size: auto 700px;
-}
-.reveal.is-visible {
-  opacity: 1;
-  transform: translateY(0);
 }
 /* Formatting, Tables, and Calendar (.feature.reveal, sections 2-4,
    right after the hero) are the three worst-positioned sections on the
@@ -239,32 +234,16 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
    already done its deferred-layout work before the user arrives -- every
    section past these has far more scroll distance, and therefore far
    more real time, between page load and actually being reached.
-   Reported on-device as lag concentrated in this stretch specifically.
    Skip-rendering these three barely saves anything anyway, being this
    close to the initial viewport, so they opt out of content-visibility
    entirely and just render like normal content -- no deferral, no
-   early-trigger race to lose. */
+   early-trigger race to lose. Their screenshots also load eagerly now
+   (Tables and Calendar's were loading="lazy" in the markup, decoding
+   right as they scrolled into view instead of well ahead of time -- the
+   same kind of collision as content-visibility's, just for image decode
+   instead of layout), and their phone frames' box-shadow is gone, same
+   as every other section's art container below. */
 .feature.reveal { content-visibility: visible; }
-/* Formatting, Tables, and Calendar all also drop the fade/transform
-   transition itself and their phone frame's box-shadow -- lag was
-   still reported at Formatting after the content-visibility exemption
-   above, and cumulative-cost testing confirmed it's these two, stacked
-   with grain and the tideline dividers that used to flank it (removed
-   from the markup), during page load's first second or two. Tables
-   turned out to have the identical problem plus one more: its
-   screenshot was loading="lazy" (Calendar's too), decoding right as it
-   scrolled into view instead of well ahead of time -- the same kind of
-   collision as content-visibility's, just for image decode instead of
-   layout. Both images load eagerly now, matching Formatting's, and all
-   three get the same treatment below: this close to the top, skip the
-   fanfare rather than try to make it free. */
-#formatting.reveal,
-#tables.reveal,
-#calendar.reveal {
-  opacity: 1;
-  transform: none;
-  transition: none;
-}
 #formatting .phone-frame,
 #tables .phone-frame,
 #calendar .phone-frame {
@@ -486,16 +465,6 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
   object-position: top;
 }
 
-/* ---------- tideline divider ---------- */
-.tideline {
-  display: block;
-  width: 100%;
-  height: 34px;
-  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 12%, black 88%, transparent 100%);
-  mask-image: linear-gradient(to right, transparent 0%, black 12%, black 88%, transparent 100%);
-}
-.tideline-wrap { padding-block: 0.5rem; }
-
 /* ---------- feature rows ---------- */
 .feature {
   padding-block: clamp(3.5rem, 7vw, 6rem);
@@ -621,7 +590,6 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
   background-image: linear-gradient(var(--frame-bg), var(--frame-bg)), linear-gradient(150deg, var(--warm), var(--accent) 55%, var(--accent-strong));
   background-origin: border-box;
   background-clip: padding-box, border-box;
-  box-shadow: 0 24px 48px -20px var(--shadow), 0 0 50px -6px var(--accent-soft), 0 0 90px 4px var(--warm-soft);
   transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.45s ease;
 }
 .showcase-frame.wide { aspect-ratio: 900 / 516; }
@@ -660,7 +628,6 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
   border-radius: 14px;
   overflow: hidden;
   border: 1px solid var(--border);
-  box-shadow: 0 20px 40px -18px var(--shadow);
 }
 .live-panel-art img { width: 100%; height: auto; display: block; }
 
@@ -752,7 +719,6 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
   background: #1a2332;
   border: 1px solid rgba(255,255,255,0.06);
   padding: 14px;
-  box-shadow: 0 20px 40px -16px var(--shadow);
   font-family: var(--font-body);
 }
 .tracker-widget-head {
@@ -837,7 +803,6 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
   max-width: 360px;
   border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 24px 48px -18px var(--shadow);
 }
 .status-bar-clock {
   background: #05100f;
@@ -1229,24 +1194,10 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
       <p>Every running reminder shows up in one cross-note list. Tap the bell from any screen to see it. Each entry ticks down in real time, once a second, instead of freezing at whatever time you last opened it.</p>
     </div>
     <div class="live-panel-art">
-      <img src="images/live-panel-reminders.webp" loading="lazy" alt="A Reminders list showing three active timers counting down live, across three different notes" />
+      <img src="images/live-panel-reminders.webp" alt="A Reminders list showing three active timers counting down live, across three different notes" />
     </div>
   </section>
 </div>
-
-<div class="wrap tideline-wrap"><svg class="tideline" viewBox="0 0 800 40" preserveAspectRatio="none" aria-hidden="true">
-  <defs>
-    <linearGradient id="tideGrad" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="var(--warm)" stop-opacity="0"/>
-      <stop offset="10%" stop-color="var(--warm)" stop-opacity="1"/>
-      <stop offset="55%" stop-color="var(--accent)" stop-opacity="1"/>
-      <stop offset="90%" stop-color="var(--accent-strong)" stop-opacity="1"/>
-      <stop offset="100%" stop-color="var(--accent-strong)" stop-opacity="0"/>
-    </linearGradient>
-  </defs>
-  <path d="M0 26 C 80 8, 140 40, 220 26 S 360 8, 440 26 S 580 40, 660 26 S 760 12, 800 26" fill="none" stroke="url(#tideGrad)" stroke-width="1" opacity="0.35"/>
-  <path d="M0 18 C 80 0, 140 32, 220 18 S 360 0, 440 18 S 580 32, 660 18 S 760 4, 800 18" fill="none" stroke="url(#tideGrad)" stroke-width="2.5" stroke-linecap="round"/>
-</svg></div>
 
 <div class="wrap">
   <section class="homescreen reveal" id="widgets">
@@ -1280,26 +1231,12 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
         </div>
       </div>
       <div class="quick-note-widget">
-        <img src="images/homescreen-widget-icon.webp" loading="lazy" alt="Quick-capture home screen icon with a plus badge, opens a blank note in one tap" />
+        <img src="images/homescreen-widget-icon.webp" alt="Quick-capture home screen icon with a plus badge, opens a blank note in one tap" />
         <p>ONE TAP &rarr; BLANK NOTE</p>
       </div>
     </div>
   </section>
 </div>
-
-<div class="wrap tideline-wrap"><svg class="tideline" viewBox="0 0 800 40" preserveAspectRatio="none" aria-hidden="true">
-  <defs>
-    <linearGradient id="tideGrad" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="var(--warm)" stop-opacity="0"/>
-      <stop offset="10%" stop-color="var(--warm)" stop-opacity="1"/>
-      <stop offset="55%" stop-color="var(--accent)" stop-opacity="1"/>
-      <stop offset="90%" stop-color="var(--accent-strong)" stop-opacity="1"/>
-      <stop offset="100%" stop-color="var(--accent-strong)" stop-opacity="0"/>
-    </linearGradient>
-  </defs>
-  <path d="M0 26 C 80 8, 140 40, 220 26 S 360 8, 440 26 S 580 40, 660 26 S 760 12, 800 26" fill="none" stroke="url(#tideGrad)" stroke-width="1" opacity="0.35"/>
-  <path d="M0 18 C 80 0, 140 32, 220 18 S 360 0, 440 18 S 580 32, 660 18 S 760 4, 800 18" fill="none" stroke="url(#tideGrad)" stroke-width="2.5" stroke-linecap="round"/>
-</svg></div>
 
 <div class="wrap">
   <section class="notif-panel reveal" id="notifications">
@@ -1338,20 +1275,6 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
   </section>
 </div>
 
-<div class="wrap tideline-wrap"><svg class="tideline" viewBox="0 0 800 40" preserveAspectRatio="none" aria-hidden="true">
-  <defs>
-    <linearGradient id="tideGrad" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="var(--warm)" stop-opacity="0"/>
-      <stop offset="10%" stop-color="var(--warm)" stop-opacity="1"/>
-      <stop offset="55%" stop-color="var(--accent)" stop-opacity="1"/>
-      <stop offset="90%" stop-color="var(--accent-strong)" stop-opacity="1"/>
-      <stop offset="100%" stop-color="var(--accent-strong)" stop-opacity="0"/>
-    </linearGradient>
-  </defs>
-  <path d="M0 26 C 80 8, 140 40, 220 26 S 360 8, 440 26 S 580 40, 660 26 S 760 12, 800 26" fill="none" stroke="url(#tideGrad)" stroke-width="1" opacity="0.35"/>
-  <path d="M0 18 C 80 0, 140 32, 220 18 S 360 0, 440 18 S 580 32, 660 18 S 760 4, 800 18" fill="none" stroke="url(#tideGrad)" stroke-width="2.5" stroke-linecap="round"/>
-</svg></div>
-
 <div class="wrap">
   <section class="showcase reveal" id="appearance">
     <div class="showcase-head">
@@ -1365,25 +1288,11 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
       <button type="button" data-theme-choice="professional">Professional</button>
     </div>
     <div class="showcase-frame">
-      <img id="img-vibrant" class="active" src="images/scheme-vibrant.webp" loading="lazy" alt="Drift Notepad dashboard in Vibrant theme, with colorful gradient folder icons" />
-      <img id="img-professional" src="images/scheme-professional.webp" loading="lazy" alt="Drift Notepad dashboard in Professional theme, with flat muted folder icons" />
+      <img id="img-vibrant" class="active" src="images/scheme-vibrant.webp" alt="Drift Notepad dashboard in Vibrant theme, with colorful gradient folder icons" />
+      <img id="img-professional" src="images/scheme-professional.webp" alt="Drift Notepad dashboard in Professional theme, with flat muted folder icons" />
     </div>
   </section>
 </div>
-
-<div class="wrap tideline-wrap"><svg class="tideline" viewBox="0 0 800 40" preserveAspectRatio="none" aria-hidden="true">
-  <defs>
-    <linearGradient id="tideGrad" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="var(--warm)" stop-opacity="0"/>
-      <stop offset="10%" stop-color="var(--warm)" stop-opacity="1"/>
-      <stop offset="55%" stop-color="var(--accent)" stop-opacity="1"/>
-      <stop offset="90%" stop-color="var(--accent-strong)" stop-opacity="1"/>
-      <stop offset="100%" stop-color="var(--accent-strong)" stop-opacity="0"/>
-    </linearGradient>
-  </defs>
-  <path d="M0 26 C 80 8, 140 40, 220 26 S 360 8, 440 26 S 580 40, 660 26 S 760 12, 800 26" fill="none" stroke="url(#tideGrad)" stroke-width="1" opacity="0.35"/>
-  <path d="M0 18 C 80 0, 140 32, 220 18 S 360 0, 440 18 S 580 32, 660 18 S 760 4, 800 18" fill="none" stroke="url(#tideGrad)" stroke-width="2.5" stroke-linecap="round"/>
-</svg></div>
 
 <div class="wrap">
   <section class="showcase reveal" id="layout">
@@ -1398,25 +1307,11 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
       <button type="button" data-layout-choice="list">List</button>
     </div>
     <div class="showcase-frame">
-      <img id="img-grid" class="active" src="images/layout-grid.webp" loading="lazy" alt="Drift Notepad dashboard in grid view, showing notes as cards" />
-      <img id="img-list" src="images/layout-list.webp" loading="lazy" alt="Drift Notepad dashboard in list view, showing notes as dense rows" />
+      <img id="img-grid" class="active" src="images/layout-grid.webp" alt="Drift Notepad dashboard in grid view, showing notes as cards" />
+      <img id="img-list" src="images/layout-list.webp" alt="Drift Notepad dashboard in list view, showing notes as dense rows" />
     </div>
   </section>
 </div>
-
-<div class="wrap tideline-wrap"><svg class="tideline" viewBox="0 0 800 40" preserveAspectRatio="none" aria-hidden="true">
-  <defs>
-    <linearGradient id="tideGrad" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="var(--warm)" stop-opacity="0"/>
-      <stop offset="10%" stop-color="var(--warm)" stop-opacity="1"/>
-      <stop offset="55%" stop-color="var(--accent)" stop-opacity="1"/>
-      <stop offset="90%" stop-color="var(--accent-strong)" stop-opacity="1"/>
-      <stop offset="100%" stop-color="var(--accent-strong)" stop-opacity="0"/>
-    </linearGradient>
-  </defs>
-  <path d="M0 26 C 80 8, 140 40, 220 26 S 360 8, 440 26 S 580 40, 660 26 S 760 12, 800 26" fill="none" stroke="url(#tideGrad)" stroke-width="1" opacity="0.35"/>
-  <path d="M0 18 C 80 0, 140 32, 220 18 S 360 0, 440 18 S 580 32, 660 18 S 760 4, 800 18" fill="none" stroke="url(#tideGrad)" stroke-width="2.5" stroke-linecap="round"/>
-</svg></div>
 
 <div class="wrap">
   <section class="showcase reveal" id="schemes">
@@ -1437,31 +1332,17 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
       <button type="button" data-scheme-choice="legal">Legal Pad</button>
     </div>
     <div class="showcase-frame wide">
-      <img id="img-holo" class="active" src="images/scheme-holo.webp" loading="lazy" alt="Dashboard in Vibrant's Holo scheme, a soft pink, lavender, and mint gradient" />
-      <img id="img-obsidian" src="images/scheme-obsidian.webp" loading="lazy" alt="Dashboard in Vibrant's Obsidian scheme, pure black" />
-      <img id="img-amber" src="images/scheme-amber.webp" loading="lazy" alt="Dashboard in Vibrant's Amber scheme, a warm gold gradient" />
-      <img id="img-synthwave" src="images/scheme-synthwave.webp" loading="lazy" alt="Dashboard in Vibrant's Synthwave scheme, a neon purple, pink, and orange gradient" />
-      <img id="img-blue" src="images/scheme-blue.webp" loading="lazy" alt="Dashboard in Professional's Blue scheme, a flat navy blue" />
-      <img id="img-slate" src="images/scheme-slate.webp" loading="lazy" alt="Dashboard in Professional's Slate scheme, a flat charcoal gray" />
-      <img id="img-brown" src="images/scheme-brown.webp" loading="lazy" alt="Dashboard in Professional's Brown scheme, a warm dark brown" />
-      <img id="img-legal" src="images/scheme-legal.webp" loading="lazy" alt="Dashboard in Professional's Legal Pad scheme, a warm cream" />
+      <img id="img-holo" class="active" src="images/scheme-holo.webp" alt="Dashboard in Vibrant's Holo scheme, a soft pink, lavender, and mint gradient" />
+      <img id="img-obsidian" src="images/scheme-obsidian.webp" alt="Dashboard in Vibrant's Obsidian scheme, pure black" />
+      <img id="img-amber" src="images/scheme-amber.webp" alt="Dashboard in Vibrant's Amber scheme, a warm gold gradient" />
+      <img id="img-synthwave" src="images/scheme-synthwave.webp" alt="Dashboard in Vibrant's Synthwave scheme, a neon purple, pink, and orange gradient" />
+      <img id="img-blue" src="images/scheme-blue.webp" alt="Dashboard in Professional's Blue scheme, a flat navy blue" />
+      <img id="img-slate" src="images/scheme-slate.webp" alt="Dashboard in Professional's Slate scheme, a flat charcoal gray" />
+      <img id="img-brown" src="images/scheme-brown.webp" alt="Dashboard in Professional's Brown scheme, a warm dark brown" />
+      <img id="img-legal" src="images/scheme-legal.webp" alt="Dashboard in Professional's Legal Pad scheme, a warm cream" />
     </div>
   </section>
 </div>
-
-<div class="wrap tideline-wrap"><svg class="tideline" viewBox="0 0 800 40" preserveAspectRatio="none" aria-hidden="true">
-  <defs>
-    <linearGradient id="tideGrad" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="var(--warm)" stop-opacity="0"/>
-      <stop offset="10%" stop-color="var(--warm)" stop-opacity="1"/>
-      <stop offset="55%" stop-color="var(--accent)" stop-opacity="1"/>
-      <stop offset="90%" stop-color="var(--accent-strong)" stop-opacity="1"/>
-      <stop offset="100%" stop-color="var(--accent-strong)" stop-opacity="0"/>
-    </linearGradient>
-  </defs>
-  <path d="M0 26 C 80 8, 140 40, 220 26 S 360 8, 440 26 S 580 40, 660 26 S 760 12, 800 26" fill="none" stroke="url(#tideGrad)" stroke-width="1" opacity="0.35"/>
-  <path d="M0 18 C 80 0, 140 32, 220 18 S 360 0, 440 18 S 580 32, 660 18 S 760 4, 800 18" fill="none" stroke="url(#tideGrad)" stroke-width="2.5" stroke-linecap="round"/>
-</svg></div>
 
 <div class="wrap">
   <section class="trust reveal" id="privacy">
@@ -1489,20 +1370,6 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
     </div>
   </section>
 </div>
-
-<div class="wrap tideline-wrap"><svg class="tideline" viewBox="0 0 800 40" preserveAspectRatio="none" aria-hidden="true">
-  <defs>
-    <linearGradient id="tideGrad" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="var(--warm)" stop-opacity="0"/>
-      <stop offset="10%" stop-color="var(--warm)" stop-opacity="1"/>
-      <stop offset="55%" stop-color="var(--accent)" stop-opacity="1"/>
-      <stop offset="90%" stop-color="var(--accent-strong)" stop-opacity="1"/>
-      <stop offset="100%" stop-color="var(--accent-strong)" stop-opacity="0"/>
-    </linearGradient>
-  </defs>
-  <path d="M0 26 C 80 8, 140 40, 220 26 S 360 8, 440 26 S 580 40, 660 26 S 760 12, 800 26" fill="none" stroke="url(#tideGrad)" stroke-width="1" opacity="0.35"/>
-  <path d="M0 18 C 80 0, 140 32, 220 18 S 360 0, 440 18 S 580 32, 660 18 S 760 4, 800 18" fill="none" stroke="url(#tideGrad)" stroke-width="2.5" stroke-linecap="round"/>
-</svg></div>
 
 <div class="wrap">
   <section class="closing reveal">
@@ -1582,31 +1449,16 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(resyncAll);
   window.addEventListener('load', resyncAll);
 
-  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // .reveal sections no longer fade/slide in -- see the comment above
+  // .reveal in the page's own <style> for why -- so the only thing left
+  // to do here is un-defer each section's content-visibility: auto well
+  // before it's actually needed, off the scroll-frame critical path,
+  // instead of leaving that decision to the browser's own (later,
+  // scroll-competing) heuristic.
   var revealEls = document.querySelectorAll('.reveal');
-  if (reduceMotion || !('IntersectionObserver' in window)) {
-    revealEls.forEach(function (el) { el.classList.add('is-visible'); el.style.contentVisibility = 'visible'; });
+  if (!('IntersectionObserver' in window)) {
+    revealEls.forEach(function (el) { el.style.contentVisibility = 'visible'; });
   } else {
-    var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('is-visible');
-          io.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.15, rootMargin: '0px 0px -8% 0px' });
-    revealEls.forEach(function (el) { io.observe(el); });
-
-    // A section's content-visibility: auto (see .reveal in the page's own
-    // <style>) defers its layout/paint until the browser decides it's
-    // getting close -- but that decision can still land on the same
-    // scroll frame as this section crossing into view, competing with
-    // the fade-in transition above right when both are triggered by the
-    // same scroll motion. A second, much earlier-firing observer forces
-    // that deferred work to happen well before a section is anywhere
-    // near the viewport, while the user is still comfortably scrolling
-    // through earlier content, so it's done and paid for by the time
-    // the tight-threshold observer above ever fires.
     var cvIo = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
         if (entry.isIntersecting) {
@@ -1630,12 +1482,13 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
   // scrolls through early -- and turned out to be cumulative cost from
   // several moderate-weight effects running at once in each zone rather
   // than any single one. The entrance animation and glow blobs were cut
-  // outright for the hero (see the comment above .hero-art); Formatting/
-  // Tables/Calendar lost their reveal transition, phone frame shadow,
-  // and flanking tideline dividers (see the comment above
-  // #formatting.reveal). But grain's full-page mix-blend-mode layer is
-  // worth keeping everywhere else on the page, just not stacked on top
-  // of that early cost. Hiding it while any of these zones intersects
+  // outright for the hero (see the comment above .hero-art); every
+  // section's reveal transition, and Formatting/Tables/Calendar's phone
+  // frame shadow and flanking tideline dividers specifically, are gone
+  // too (see the comments above .reveal and .feature.reveal). But
+  // grain's full-page mix-blend-mode layer is worth keeping everywhere
+  // else on the page, just not stacked on top of that early cost.
+  // Hiding it while any of these zones intersects
   // the viewport, and letting it back in once none do, keeps the
   // texture everywhere it was actually confirmed fine and removes it
   // only from the early stretch it wasn't. Tracks intersection per
