@@ -180,24 +180,25 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
   opacity: 0.12;
 }
 
-/* Scroll lag reported on-device tracked with the hero and Formatting
-   (the first two things anyone scrolls through) being on screen.
-   Isolating effects one at a time -- glow blobs, pulse rings, this
-   grain layer, phone frame rotate/shadow stacks, Formatting's own
-   reveal transition, the tideline dividers flanking it -- never
-   cleared it individually in either zone, only disabling everything
-   in a zone at once did. No single effect crosses the jank threshold
-   alone; several running concurrently during page load's first second
-   or two add up past it together. Grain is confirmed fine everywhere
-   else on the page; it only needs to stay off while stacked on top of
-   that early cost. See the IntersectionObserver in the page's own
-   <script> that toggles this while the hero (#top) or Formatting
-   intersects. opacity, not display: toggling display forces the
-   browser to tear down and reinsert a full-page, mix-blend-mode layer
-   into the render tree, a real layout/paint hit landing right at the
-   moment the observer fires -- exactly the boundary this exists to be
-   smooth across. opacity is compositor-only, so the same on/off
-   toggle costs nothing extra at either crossing. */
+/* Scroll lag reported on-device tracked with the hero and then the
+   first three .feature sections being on screen -- everything anyone
+   scrolls through early. Isolating effects one at a time -- glow blobs,
+   pulse rings, this grain layer, phone frame rotate/shadow stacks, the
+   reveal transitions, the tideline dividers, even lazy-loaded image
+   decode -- never cleared it individually in either zone, only
+   disabling everything in a zone at once did. No single effect crosses
+   the jank threshold alone; several running concurrently during page
+   load's first second or two add up past it together. Grain is
+   confirmed fine everywhere else on the page; it only needs to stay off
+   while stacked on top of that early cost. See the IntersectionObserver
+   in the page's own <script> that toggles this while the hero (#top) or
+   any of Formatting/Tables/Calendar intersects. opacity, not display:
+   toggling display forces the browser to tear down and reinsert a
+   full-page, mix-blend-mode layer into the render tree, a real
+   layout/paint hit landing right at the moment the observer fires --
+   exactly the boundaries this exists to be smooth across. opacity is
+   compositor-only, so the same on/off toggle costs nothing extra at
+   any of them. */
 .grain.dimmed {
   opacity: 0;
 }
@@ -244,20 +245,29 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
    entirely and just render like normal content -- no deferral, no
    early-trigger race to lose. */
 .feature.reveal { content-visibility: visible; }
-/* Formatting specifically (not Tables or Calendar) also drops the
-   fade/transform transition itself and its phone frame's box-shadow --
-   lag was still reported there after the content-visibility exemption
+/* Formatting, Tables, and Calendar all also drop the fade/transform
+   transition itself and their phone frame's box-shadow -- lag was
+   still reported at Formatting after the content-visibility exemption
    above, and cumulative-cost testing confirmed it's these two, stacked
-   with grain and the tideline dividers that used to flank this section
-   (removed from the markup), during page load's first second or two.
-   Same reasoning as the content-visibility exemption: this close to the
-   top, skip the fanfare rather than try to make it free. */
-#formatting.reveal {
+   with grain and the tideline dividers that used to flank it (removed
+   from the markup), during page load's first second or two. Tables
+   turned out to have the identical problem plus one more: its
+   screenshot was loading="lazy" (Calendar's too), decoding right as it
+   scrolled into view instead of well ahead of time -- the same kind of
+   collision as content-visibility's, just for image decode instead of
+   layout. Both images load eagerly now, matching Formatting's, and all
+   three get the same treatment below: this close to the top, skip the
+   fanfare rather than try to make it free. */
+#formatting.reveal,
+#tables.reveal,
+#calendar.reveal {
   opacity: 1;
   transform: none;
   transition: none;
 }
-#formatting .phone-frame {
+#formatting .phone-frame,
+#tables .phone-frame,
+#calendar .phone-frame {
   box-shadow: none;
 }
 .live-panel.reveal { contain-intrinsic-size: auto 370px; }
@@ -1189,25 +1199,11 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
     </div>
     <div class="feature-art">
       <div class="phone-frame">
-        <img src="images/feature-tables.webp" loading="lazy" alt="A mileage table inside a note with rows of dates, start and end points, and a running mileage total" />
+        <img src="images/feature-tables.webp" alt="A mileage table inside a note with rows of dates, start and end points, and a running mileage total" />
       </div>
     </div>
   </section>
 </div>
-
-<div class="wrap tideline-wrap"><svg class="tideline" viewBox="0 0 800 40" preserveAspectRatio="none" aria-hidden="true">
-  <defs>
-    <linearGradient id="tideGrad" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="var(--warm)" stop-opacity="0"/>
-      <stop offset="10%" stop-color="var(--warm)" stop-opacity="1"/>
-      <stop offset="55%" stop-color="var(--accent)" stop-opacity="1"/>
-      <stop offset="90%" stop-color="var(--accent-strong)" stop-opacity="1"/>
-      <stop offset="100%" stop-color="var(--accent-strong)" stop-opacity="0"/>
-    </linearGradient>
-  </defs>
-  <path d="M0 26 C 80 8, 140 40, 220 26 S 360 8, 440 26 S 580 40, 660 26 S 760 12, 800 26" fill="none" stroke="url(#tideGrad)" stroke-width="1" opacity="0.35"/>
-  <path d="M0 18 C 80 0, 140 32, 220 18 S 360 0, 440 18 S 580 32, 660 18 S 760 4, 800 18" fill="none" stroke="url(#tideGrad)" stroke-width="2.5" stroke-linecap="round"/>
-</svg></div>
 
 <div class="wrap">
   <section class="feature reveal" id="calendar">
@@ -1219,7 +1215,7 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
     </div>
     <div class="feature-art">
       <div class="phone-frame">
-        <img src="images/feature-calendar.webp" loading="lazy" alt="A daily agenda view with morning, afternoon, and evening entries, several with alarm reminders attached" />
+        <img src="images/feature-calendar.webp" alt="A daily agenda view with morning, afternoon, and evening entries, several with alarm reminders attached" />
       </div>
     </div>
   </section>
@@ -1629,24 +1625,26 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
   window.addEventListener('scroll', toggleBackToTop, { passive: true });
   toggleBackToTop();
 
-  // Scroll lag reported on-device tracked with the hero and then
-  // Formatting being on screen -- the first two things anyone scrolls
-  // through -- and turned out to be cumulative cost from several
-  // moderate-weight effects running at once in each zone rather than
-  // any single one. The entrance animation and glow blobs were cut
-  // outright for the hero (see the comment above .hero-art); Formatting
-  // lost its reveal transition, phone frame shadow, and flanking
-  // tideline dividers (see the comment above #formatting.reveal). But
-  // grain's full-page mix-blend-mode layer is worth keeping everywhere
-  // else on the page, just not stacked on top of that early cost.
-  // Hiding it while either zone intersects the viewport, and letting it
-  // back in once both don't, keeps the texture everywhere it was
-  // actually confirmed fine and removes it only from the two windows it
-  // wasn't. Tracks intersection per target since a single shared
-  // callback's entries only ever cover whichever target just changed,
-  // not the other one's current state.
+  // Scroll lag reported on-device tracked with the hero and then the
+  // first three .feature sections being on screen -- everything anyone
+  // scrolls through early -- and turned out to be cumulative cost from
+  // several moderate-weight effects running at once in each zone rather
+  // than any single one. The entrance animation and glow blobs were cut
+  // outright for the hero (see the comment above .hero-art); Formatting/
+  // Tables/Calendar lost their reveal transition, phone frame shadow,
+  // and flanking tideline dividers (see the comment above
+  // #formatting.reveal). But grain's full-page mix-blend-mode layer is
+  // worth keeping everywhere else on the page, just not stacked on top
+  // of that early cost. Hiding it while any of these zones intersects
+  // the viewport, and letting it back in once none do, keeps the
+  // texture everywhere it was actually confirmed fine and removes it
+  // only from the early stretch it wasn't. Tracks intersection per
+  // target since a single shared callback's entries only ever cover
+  // whichever target just changed, not the others' current state.
   var grainEl = document.querySelector('.grain');
-  var grainZoneEls = [document.getElementById('top'), document.getElementById('formatting')].filter(Boolean);
+  var grainZoneEls = ['top', 'formatting', 'tables', 'calendar'].map(function (id) {
+    return document.getElementById(id);
+  }).filter(Boolean);
   if (grainEl && grainZoneEls.length && 'IntersectionObserver' in window) {
     var grainZoneState = {};
     var grainObserver = new IntersectionObserver(function (entries) {
