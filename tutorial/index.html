@@ -272,10 +272,10 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
       <a href="#basics">Basics</a>
       <a href="#organizing">Organizing</a>
       <a href="#tables">Tables</a>
-      <a href="#calendar-reminders">Calendar &amp; Reminders</a>
-      <a href="#customization">Customization</a>
       <a href="#photos">Photos</a>
-      <a href="#backup-security">Backup &amp; Security</a>
+      <a href="#customization">Customization</a>
+      <a href="#calendar-reminders">Calendar</a>
+      <a href="#backup-security">Backup</a>
     </div>
   </section>
 </div>
@@ -364,10 +364,6 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
         <h3><span class="topic-icon">↕</span>Reordering by dragging</h3>
         <p>Notes on the dashboard (when sorted "Manually"), header icons, categories in Settings, and list lines in a note can all be long-pressed and dragged to reorder. Hold for about half a second until it "picks up," then drag it where you want.</p>
       </div>
-      <div class="doc-topic" id="photos">
-        <h3><span class="topic-icon">📷</span>Photos</h3>
-        <p>Add photos to a note with the Camera, Gallery, or Files buttons at the bottom of its editor. The first photo shows as a thumbnail on the note's dashboard card, with a badge for how many it holds.</p>
-      </div>
     </div>
   </section>
 </div>
@@ -387,6 +383,69 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
         <div class="phone-frame">
           <img src="../images/feature-tables.webp" alt="A mileage table inside a note with rows of dates, start and end points, and a running mileage total" loading="lazy" />
         </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ============ PHOTOS ============ -->
+<div class="wrap">
+  <section class="doc-section" id="photos">
+    <div class="doc-section-head">
+      <p class="eyebrow">Photos</p>
+      <h2>A picture, right inside the note.</h2>
+      <p>Add photos to a note with the Camera, Gallery, or Files buttons at the bottom of its editor. The first photo shows as a thumbnail on the note's dashboard card, with a badge for how many it holds.</p>
+    </div>
+  </section>
+</div>
+
+<!-- ============ CUSTOMIZATION ============ -->
+<div class="wrap">
+  <section class="doc-section" id="customization">
+    <div class="doc-section-head">
+      <p class="eyebrow">Customization</p>
+      <h2>How far the "make it yours" options actually go.</h2>
+      <p>Two independent looks, Vibrant and Professional, each with their own full set of backgrounds, plus folder icon themes, dashboard layout, and note-level locking, all mixable per note.</p>
+    </div>
+
+    <div class="doc-feature">
+      <div class="doc-feature-copy">
+        <h3 style="font-family:var(--font-display);font-weight:500;font-size:1.5rem;margin-bottom:0.75rem;">Vibrant or buttoned-up, switch anytime.</h3>
+        <p><strong>Vibrant</strong> leans into color: animated gradient themes, a lively dashboard, folder icons with personality. <strong>Professional</strong> strips that back to a flat, muted palette. Light, Dark, and Brown are free; Blue, Slate, Legal Pad, and Graph Paper are part of the paid unlock, with the last two adding ruled lines or a grid to the note itself.</p>
+        <p>Switch the whole app between them any time from Settings under "Look"; it's a top-level choice, not per-note. Independently, <strong>Dashboard layout</strong> switches the category chips into a grid of folder tiles (or back), and every note can still have its own individual background regardless of which mode the app is in overall.</p>
+      </div>
+      <div class="doc-feature-art">
+        <div class="phone-frame">
+          <img src="images/settings-look-layout.webp" alt="Settings showing the Vibrant/Professional toggle, Folders/Categories dashboard layout toggle, and background swatches" loading="lazy" />
+        </div>
+        <p class="doc-feature-caption">Look, dashboard layout, and background swatches, all in Settings</p>
+      </div>
+    </div>
+
+    <div class="doc-feature reverse">
+      <div class="doc-feature-copy">
+        <p>Every note can have its own background too. Tap the 🎨 button in its editor and choose from solid colors or the animated gradient themes, including Rainbow, which automatically switches to white text so it stays readable over every color in the gradient.</p>
+        <p>Prefer to leave it alone? Set a default background for new notes and a separate one for the dashboard itself, both in Settings, so every fresh note starts exactly how you like without picking each time.</p>
+      </div>
+      <div class="doc-feature-art">
+        <div class="phone-frame">
+          <img src="images/settings-professional-presets.webp" alt="Settings in Professional mode, showing the Light, Dark, Brown, Blue, Slate, Legal Pad, and Graph Paper preset colors" loading="lazy" />
+        </div>
+        <p class="doc-feature-caption">Professional mode's flat, muted preset palette</p>
+      </div>
+    </div>
+
+    <div class="doc-feature">
+      <div class="doc-feature-copy">
+        <h3 style="font-family:var(--font-display);font-weight:500;font-size:1.5rem;margin-bottom:0.75rem;">Fifteen folder styles, and a lock for anything private.</h3>
+        <p>Pick from 15 different folder icon styles under "Folder icon theme" in Settings; it applies app-wide whenever the dashboard is in folder view. Want one category to stand out from the rest? Give just that category its own icon from its row in Settings, independent of the app-wide theme.</p>
+        <p>Set a PIN in Settings, then lock any individual note from its editor (🔒). A locked note shows only its title on the dashboard until the PIN is entered. Once unlocked, it stays that way for the rest of your session. Change or remove the PIN any time from the same screen.</p>
+      </div>
+      <div class="doc-feature-art">
+        <div class="phone-frame">
+          <img src="images/settings-folder-icons.webp" alt="Settings showing the full grid of 15 folder icon theme options" loading="lazy" />
+        </div>
+        <p class="doc-feature-caption">All 15 folder icon styles, picked app-wide</p>
       </div>
     </div>
   </section>
@@ -455,58 +514,6 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
           <img src="images/reminders-dashboard-list.webp" alt="The dashboard's reminders list showing an active timer counting down" loading="lazy" />
         </div>
         <p class="doc-feature-caption">Every active reminder, across every note, in one list</p>
-      </div>
-    </div>
-  </section>
-</div>
-
-<!-- ============ CUSTOMIZATION ============ -->
-<div class="wrap">
-  <section class="doc-section" id="customization">
-    <div class="doc-section-head">
-      <p class="eyebrow">Customization</p>
-      <h2>How far the "make it yours" options actually go.</h2>
-      <p>Two independent looks, Vibrant and Professional, each with their own full set of backgrounds, plus folder icon themes, dashboard layout, and note-level locking, all mixable per note.</p>
-    </div>
-
-    <div class="doc-feature">
-      <div class="doc-feature-copy">
-        <h3 style="font-family:var(--font-display);font-weight:500;font-size:1.5rem;margin-bottom:0.75rem;">Vibrant or buttoned-up, switch anytime.</h3>
-        <p><strong>Vibrant</strong> leans into color: animated gradient themes, a lively dashboard, folder icons with personality. <strong>Professional</strong> strips that back to a flat, muted palette. Light, Dark, and Brown are free; Blue, Slate, Legal Pad, and Graph Paper are part of the paid unlock, with the last two adding ruled lines or a grid to the note itself.</p>
-        <p>Switch the whole app between them any time from Settings under "Look"; it's a top-level choice, not per-note. Independently, <strong>Dashboard layout</strong> switches the category chips into a grid of folder tiles (or back), and every note can still have its own individual background regardless of which mode the app is in overall.</p>
-      </div>
-      <div class="doc-feature-art">
-        <div class="phone-frame">
-          <img src="images/settings-look-layout.webp" alt="Settings showing the Vibrant/Professional toggle, Folders/Categories dashboard layout toggle, and background swatches" loading="lazy" />
-        </div>
-        <p class="doc-feature-caption">Look, dashboard layout, and background swatches, all in Settings</p>
-      </div>
-    </div>
-
-    <div class="doc-feature reverse">
-      <div class="doc-feature-copy">
-        <p>Every note can have its own background too. Tap the 🎨 button in its editor and choose from solid colors or the animated gradient themes, including Rainbow, which automatically switches to white text so it stays readable over every color in the gradient.</p>
-        <p>Prefer to leave it alone? Set a default background for new notes and a separate one for the dashboard itself, both in Settings, so every fresh note starts exactly how you like without picking each time.</p>
-      </div>
-      <div class="doc-feature-art">
-        <div class="phone-frame">
-          <img src="images/settings-professional-presets.webp" alt="Settings in Professional mode, showing the Light, Dark, Brown, Blue, Slate, Legal Pad, and Graph Paper preset colors" loading="lazy" />
-        </div>
-        <p class="doc-feature-caption">Professional mode's flat, muted preset palette</p>
-      </div>
-    </div>
-
-    <div class="doc-feature">
-      <div class="doc-feature-copy">
-        <h3 style="font-family:var(--font-display);font-weight:500;font-size:1.5rem;margin-bottom:0.75rem;">Fifteen folder styles, and a lock for anything private.</h3>
-        <p>Pick from 15 different folder icon styles under "Folder icon theme" in Settings; it applies app-wide whenever the dashboard is in folder view. Want one category to stand out from the rest? Give just that category its own icon from its row in Settings, independent of the app-wide theme.</p>
-        <p>Set a PIN in Settings, then lock any individual note from its editor (🔒). A locked note shows only its title on the dashboard until the PIN is entered. Once unlocked, it stays that way for the rest of your session. Change or remove the PIN any time from the same screen.</p>
-      </div>
-      <div class="doc-feature-art">
-        <div class="phone-frame">
-          <img src="images/settings-folder-icons.webp" alt="Settings showing the full grid of 15 folder icon theme options" loading="lazy" />
-        </div>
-        <p class="doc-feature-caption">All 15 folder icon styles, picked app-wide</p>
       </div>
     </div>
   </section>
