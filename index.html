@@ -180,72 +180,18 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
   opacity: 0.12;
 }
 
-/* ---------- perf diagnostic mode (?perf=hero-off / ?perf=no-grain / ?perf=no-phone-fx) ---------- */
-/* Reported lag ("mud") tracks precisely with the hero being on screen --
-   clears once it's scrolled fully past. Ruled out so far: the glow blobs
-   and store button pulse rings (?perf=hero-off), and the grain layer's
-   mix-blend-mode (?perf=no-grain) -- mud persisted through both.
-   Next candidate, and the one thing in the hero neither test touched:
-   the hero screenshot's phone frame. It's the only .phone-frame on the
-   page carrying rotate(-3deg) + translateZ(0) + backface-visibility:
-   hidden (added for sharper text under rotation, see the comment above
-   .hero-art .phone-frame below) stacked with a 4-layer box-shadow and a
-   border-radius clip -- forced GPU-layer promotion plus a rounded-corner
-   mask is a known expensive combination on some Android GPU drivers,
-   where the mask gets recomputed every frame instead of cached.
-   ?perf=no-phone-fx drops the rotate/layer-promotion transform and
-   collapses the box-shadow to a single flat one, on the hero frame only,
-   to attribute the cost cleanly. Toggled by a tiny inline script right
-   after <body> opens, before first paint. Not linked from the UI;
-   temporary, meant to be removed once the cause is confirmed. */
-.perf-hero-off .hero-art::before,
-.perf-hero-off .hero-art::after,
-.perf-hero-off .store-btn::before,
-.perf-hero-off .store-btn::after {
-  animation: none !important;
-  display: none !important;
-}
-.perf-no-grain .grain {
-  display: none !important;
-}
-.perf-no-phone-fx .hero-art .phone-frame {
-  transform: none !important;
-  backface-visibility: visible !important;
-  box-shadow: 0 20px 40px -20px var(--shadow) !important;
-}
-/* ?perf=hero-min: stacks all three exclusions above plus one thing none
-   of them touched -- the hero's own entrance animation (.hero-copy > *
-   and .hero-art both fade/slide in via hero-in, ~1.5s including delays).
-   Each individual exclusion left the mud in place, which raises a
-   different possibility: no single hero effect is expensive enough
-   alone to cross the jank threshold on this device, but several
-   moderate-cost things running at once during that ~1.5s window --
-   entrance animations, blobs, pulse rings, grain's blend, the phone
-   frame's layer promotion -- add up past it together. This flag renders
-   the hero as plainly as possible, all at once, to test that directly.
-   If mud clears here, it's cumulative cost and the shipped version needs
-   trimming, not a single culprit removed. If it doesn't, the cause isn't
-   in the hero's CSS/animations at all. */
-.perf-hero-min .hero-art::before,
-.perf-hero-min .hero-art::after,
-.perf-hero-min .store-btn::before,
-.perf-hero-min .store-btn::after {
-  animation: none !important;
-  display: none !important;
-}
-.perf-hero-min .grain {
-  display: none !important;
-}
-.perf-hero-min .hero-art .phone-frame {
-  transform: none !important;
-  backface-visibility: visible !important;
-  box-shadow: 0 20px 40px -20px var(--shadow) !important;
-}
-.perf-hero-min .hero-copy > *,
-.perf-hero-min .hero-art {
-  animation: none !important;
-  opacity: 1 !important;
-  transform: none !important;
+/* Scroll lag reported on-device tracked exactly with the hero being on
+   screen. Isolating each hero effect one at a time (glow blobs, pulse
+   rings, this grain layer, the phone frame's rotate/shadow stack) never
+   cleared it individually -- only disabling all of them at once did,
+   meaning no single one crosses the jank threshold alone, but several
+   running concurrently during the hero's first second or two add up
+   past it together. Grain itself is confirmed fine everywhere else on
+   the page; it only needs to stay off while stacked on top of the
+   hero's other cost. See the IntersectionObserver in the page's own
+   <script> that toggles this while the hero (#top) intersects. */
+.grain.hero-visible {
+  display: none;
 }
 
 /* ---------- scroll reveal ---------- */
@@ -347,72 +293,22 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
   gap: clamp(2rem, 5vw, 4rem);
   align-items: center;
 }
-@keyframes hero-in {
-  from { opacity: 0; transform: translateY(22px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.hero-copy > * {
-  opacity: 0;
-  animation: hero-in 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-.hero-copy > *:nth-child(1) { animation-delay: 0.05s; }
-.hero-copy > *:nth-child(2) { animation-delay: 0.15s; }
-.hero-copy > *:nth-child(3) { animation-delay: 0.25s; }
-.hero-copy > *:nth-child(4) { animation-delay: 0.32s; }
-.hero-copy > *:nth-child(5) { animation-delay: 0.38s; }
-.hero-copy > *:nth-child(6) { animation-delay: 0.45s; }
+/* Both the staggered entrance animation that used to live here
+   (.hero-copy > *, .hero-art fading/sliding in via a shared hero-in
+   keyframe) and the glow blobs behind the phone (.hero-art::before/
+   ::after, an infinite transform drift) are gone. Neither was, on its
+   own, the cause of scroll lag reported on-device right at the hero --
+   confirmed by disabling each individually and still seeing it. What
+   fixed it was disabling every hero-only effect at once, which means
+   no single one crosses the jank threshold alone, but several running
+   concurrently during the hero's first second or two do, together. So
+   rather than re-add these two back in and gamble on which combination
+   stays under budget, they're cut for good: the highest-cost pieces
+   (continuous animation, one running for as long as the hero's on
+   screen, the other for its entire entrance) for the least essential
+   payoff (a one-time flourish and a background detail respectively). */
 .hero-art {
   position: relative;
-  opacity: 0;
-  animation: hero-in 1.1s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
-}
-@media (prefers-reduced-motion: reduce) {
-  .hero-copy > *, .hero-art { animation: none; opacity: 1; }
-}
-@keyframes glow-drift {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(-3%, 4%) scale(1.08); }
-}
-.hero-art::before,
-.hero-art::after {
-  content: '';
-  position: absolute;
-  border-radius: 50%;
-  z-index: 0;
-  pointer-events: none;
-}
-/* A soft-edged radial-gradient stands in for what used to be a solid
-   circle plus filter: blur(60px) -- blur forces the browser to
-   re-rasterize the whole blob at its new position/scale on every frame
-   of the (infinite) animation below, which is real, continuous cost
-   for as long as it runs. A gradient fades out on its own, so the
-   transform animation stays compositor-only (cheap) instead. Paused
-   off-screen too, see the IntersectionObserver in the page's own
-   <script>, as a further belt-and-suspenders measure. */
-.hero-art.paused::before,
-.hero-art.paused::after {
-  animation-play-state: paused;
-}
-.hero-art::before {
-  width: 62%;
-  height: 62%;
-  top: 4%;
-  left: 8%;
-  background: radial-gradient(circle, var(--accent) 0%, var(--accent) 45%, transparent 100%);
-  opacity: 0.28;
-  animation: glow-drift 14s ease-in-out infinite;
-}
-.hero-art::after {
-  width: 46%;
-  height: 46%;
-  bottom: 6%;
-  right: 4%;
-  background: radial-gradient(circle, var(--warm) 0%, var(--warm) 45%, transparent 100%);
-  opacity: 0.20;
-  animation: glow-drift 18s ease-in-out infinite reverse;
-}
-@media (prefers-reduced-motion: reduce) {
-  .hero-art::before, .hero-art::after { animation: none; }
 }
 .hero h1 {
   font-family: var(--font-display);
@@ -1063,9 +959,14 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
    button's own corner radius, not a distorted one.
    Two rings staggered 1.2s apart (half the 2.4s loop) read as a
    fuller, more layered pulse than one ring alone, at the same
-   per-frame cost -- both are still transform/opacity only. */
-.store-btn::after,
-.store-btn::before {
+   per-frame cost -- both are still transform/opacity only.
+   Scoped to .closing's copy of this button only: this ran forever on
+   the hero's copy too, one of several moderate-cost hero effects that
+   individually tested fine but added up to reported on-device scroll
+   lag when running concurrently (see the comment above .hero-art).
+   Cut there; the closing CTA is far enough from that to keep it. */
+.closing .store-btn::after,
+.closing .store-btn::before {
   content: '';
   position: absolute;
   inset: -14px;
@@ -1126,7 +1027,7 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
 #back-to-top svg { width: 18px; height: 18px; }
 @media (prefers-reduced-motion: reduce) {
   #back-to-top { transition: opacity 0.2s ease; transform: none !important; }
-  .store-btn::after { animation: none; }
+  .closing .store-btn::after { animation: none; }
 }
 
 /* ---------- footer ---------- */
@@ -1170,12 +1071,6 @@ html { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
 </style>
 </head>
 <body>
-<script>
-if (location.search.indexOf('perf=hero-off') !== -1) document.body.classList.add('perf-hero-off');
-if (location.search.indexOf('perf=no-grain') !== -1) document.body.classList.add('perf-no-grain');
-if (location.search.indexOf('perf=no-phone-fx') !== -1) document.body.classList.add('perf-no-phone-fx');
-if (location.search.indexOf('perf=hero-min') !== -1) document.body.classList.add('perf-hero-min');
-</script>
 
 <div class="grain" aria-hidden="true"></div>
 
@@ -1670,34 +1565,6 @@ if (location.search.indexOf('perf=hero-min') !== -1) document.body.classList.add
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(resyncAll);
   window.addEventListener('load', resyncAll);
 
-  // A CSS animation (unlike a transition) outranks an element's own
-  // hover/active transform in the cascade for as long as it's still
-  // "in effect" -- with animation-fill-mode: forwards that's forever,
-  // not just while it's playing. The hero's entrance animation sets
-  // each direct .hero-copy child's own transform, which silently
-  // blocked the Play button's hover lift and press-down feel (and
-  // would do the same to anything else interactive added there
-  // later). Clearing the animation once it finishes, rather than
-  // leaving forwards to hold it in place, hands transform back to
-  // ordinary hover/active CSS without any visible jump.
-  //
-  // Just clearing `animation` isn't enough on its own, though -- the
-  // element's base rule (.hero-copy > *, .hero-art) sets opacity: 0
-  // as a plain, non-animation declaration, which is what the
-  // animation's forwards fill-mode was overriding to keep it visible
-  // at opacity: 1. Removing the animation without also pinning
-  // opacity/transform to their finished values as real inline styles
-  // drops the animation's override and falls straight back to that
-  // base opacity: 0 -- the whole hero fading in and then silently
-  // fading back out the instant its entrance animation ends.
-  document.querySelectorAll('.hero-copy > *, .hero-art').forEach(function (el) {
-    el.addEventListener('animationend', function () {
-      el.style.animation = 'none';
-      el.style.opacity = '1';
-      el.style.transform = '';
-    }, { once: true });
-  });
-
   var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var revealEls = document.querySelectorAll('.reveal');
   if (reduceMotion || !('IntersectionObserver' in window)) {
@@ -1721,22 +1588,25 @@ if (location.search.indexOf('perf=hero-min') !== -1) document.body.classList.add
   window.addEventListener('scroll', toggleBackToTop, { passive: true });
   toggleBackToTop();
 
-  var heroArt = document.querySelector('.hero-art');
+  // Scroll lag reported on-device tracked precisely with the hero being
+  // on screen, and turned out to be cumulative cost from several
+  // moderate-weight hero effects running at once rather than any single
+  // one -- the entrance animation and glow blobs were cut outright for
+  // that (see the comment above .hero-art), but grain's full-page
+  // mix-blend-mode layer is worth keeping everywhere else on the page,
+  // just not stacked on top of the hero's own cost. Hiding it only while
+  // the hero intersects the viewport, and letting it back in the moment
+  // it doesn't, keeps the texture everywhere it was actually confirmed
+  // fine and removes it only from the one window it wasn't.
+  var grainEl = document.querySelector('.grain');
   var heroSection = document.getElementById('top');
-
-  // The glow blobs behind the hero phone (.hero-art::before/::after)
-  // animate transform forever -- compositor-cheap now that they're a
-  // radial-gradient instead of a blurred solid circle, but there's still
-  // no reason to keep it running once the hero has scrolled out of view.
-  // Pausing it there (and resuming when it's back) is pure savings the
-  // rest of the time someone's reading the page.
-  if (heroArt && heroSection && 'IntersectionObserver' in window) {
-    var glowObserver = new IntersectionObserver(function (entries) {
+  if (grainEl && heroSection && 'IntersectionObserver' in window) {
+    var grainObserver = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
-        heroArt.classList.toggle('paused', !entry.isIntersecting);
+        grainEl.classList.toggle('hero-visible', entry.isIntersecting);
       });
     });
-    glowObserver.observe(heroSection);
+    grainObserver.observe(heroSection);
   }
 }());
 </script>
